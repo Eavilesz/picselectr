@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-export type SelectionMode = 'digital' | 'album' | 'cover';
+export type SelectionMode = "digital" | "album" | "cover";
 
 interface Photo {
   id: number;
@@ -17,13 +17,13 @@ interface ImagePreviewProps {
   isSelected: boolean;
   onToggle: () => void;
   currentMode: SelectionMode;
-  selectionType: 'digital' | 'album' | 'cover' | null;
+  selectionType: "digital" | "album" | "cover" | null;
 }
 
-export default function ImagePreview({ 
-  photo, 
-  onClose, 
-  isSelected, 
+export default function ImagePreview({
+  photo,
+  onClose,
+  isSelected,
   onToggle,
   currentMode,
   selectionType,
@@ -52,20 +52,20 @@ export default function ImagePreview({
 
   // Color configuration for each mode
   const modeColors = {
-    digital: { heart: 'text-gray-400', bg: 'bg-gray-400' },
-    album: { heart: 'text-slate-400', bg: 'bg-slate-500' },
-    cover: { heart: 'text-amber-600', bg: 'bg-amber-700' },
+    digital: { heart: "text-white", bg: "bg-white" },
+    album: { heart: "text-rose-300", bg: "bg-rose-300" },
+    cover: { heart: "text-amber-400", bg: "bg-amber-400" },
   };
 
   const currentColor = modeColors[currentMode];
   const displayColor = selectionType ? modeColors[selectionType] : currentColor;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/95"
-      onClick={onClose}
-    >
-      <div className="h-full flex flex-col" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 bg-black/95" onClick={onClose}>
+      <div
+        className="h-full flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header with controls */}
         <div className="flex items-center justify-between p-4 shrink-0">
           {/* Heart Icon for Selection */}
@@ -97,9 +97,15 @@ export default function ImagePreview({
 
           {/* Selection Type Indicator */}
           {selectionType && (
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-900">
-              <div className={`w-2 h-2 ${displayColor.bg}`} />
-              <span className="text-sm text-gray-300 capitalize">{selectionType}</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 border border-white/10">
+              <div className={`w-1.5 h-1.5 rounded-full ${displayColor.bg}`} />
+              <span className="text-xs tracking-[0.2em] text-white/50 uppercase">
+                {selectionType === "digital"
+                  ? "Digital"
+                  : selectionType === "album"
+                    ? "Álbum"
+                    : "Portada"}
+              </span>
             </div>
           )}
 

@@ -19,29 +19,26 @@ export default function SelectionModeNav({
     {
       id: "digital" as SelectionMode,
       label: "Digital",
-      color: "bg-gray-400",
-      textColor: "text-gray-400",
-      activeRing: "ring-gray-400",
+      activeText: "text-white",
+      activeLine: "bg-white",
     },
     {
       id: "album" as SelectionMode,
       label: "Álbum",
-      color: "bg-slate-500",
-      textColor: "text-slate-400",
-      activeRing: "ring-slate-500",
+      activeText: "text-rose-300",
+      activeLine: "bg-rose-300",
     },
     {
       id: "cover" as SelectionMode,
       label: "Portada",
-      color: "bg-amber-700",
-      textColor: "text-amber-600",
-      activeRing: "ring-amber-700",
+      activeText: "text-amber-400",
+      activeLine: "bg-amber-400",
     },
   ];
 
   return (
-    <div className="px-6 py-4 border-b border-gray-800">
-      <div className="grid grid-cols-3 gap-3">
+    <div className="border-b border-white/10">
+      <div className="flex">
         {modes.map((mode) => {
           const isActive = currentMode === mode.id;
           const { selected, total } = counts[mode.id];
@@ -50,26 +47,30 @@ export default function SelectionModeNav({
             <button
               key={mode.id}
               onClick={() => onModeChange(mode.id)}
-              className={`px-3 py-3 transition-all ${
-                isActive
-                  ? `${mode.color} text-black ring-2 ${mode.activeRing}`
-                  : "bg-gray-900 text-gray-400 hover:bg-gray-800"
+              className={`flex-1 px-4 pt-5 pb-4 relative transition-all duration-200 ${
+                isActive ? mode.activeText : "text-white/25 hover:text-white/50"
               }`}
             >
-              <div className="flex flex-col items-center gap-1">
-                <div
-                  className={`font-medium text-sm md:text-base ${isActive ? "text-black" : mode.textColor}`}
-                >
+              <div className="flex flex-col items-center gap-1.5">
+                <span className="text-[10px] tracking-[0.2em] uppercase font-medium">
                   {mode.label}
-                </div>
-                <div
-                  className={`text-base md:text-lg font-bold ${
-                    isActive ? "text-black" : mode.textColor
+                </span>
+                <span
+                  className={`text-2xl font-light tabular-nums leading-none ${
+                    isActive ? "" : "text-white/25"
                   }`}
                 >
-                  {selected}/{total}
-                </div>
+                  {selected}
+                  <span className="text-xs font-normal opacity-50 ml-0.5">
+                    /{total}
+                  </span>
+                </span>
               </div>
+              {isActive && (
+                <div
+                  className={`absolute bottom-0 left-6 right-6 h-px ${mode.activeLine}`}
+                />
+              )}
             </button>
           );
         })}

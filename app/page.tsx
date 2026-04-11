@@ -136,14 +136,18 @@ export default function Home() {
   const availablePhotos = getAvailablePhotos();
 
   return (
-    <div className="min-h-screen bg-black pb-24">
+    <div className="min-h-screen bg-black pb-36">
       {/* Header */}
-      <header className="px-6 pt-12 pb-6">
-        <h1 className="text-4xl md:text-5xl font-serif text-white">
+      <header className="px-6 pt-14 pb-8">
+        <p className="text-[10px] tracking-[0.35em] text-white/35 uppercase mb-5">
+          Selección de fotos
+        </p>
+        <h1 className="text-5xl md:text-6xl font-serif font-normal text-white leading-[1.1]">
           La Boda de
           <br />
-          María & Juan
+          <em>María &amp; Juan</em>
         </h1>
+        <div className="mt-6 w-12 h-px bg-white/20" />
       </header>
 
       {/* Selection Mode Navigation */}
@@ -158,14 +162,14 @@ export default function Home() {
       />
 
       {/* Info Message */}
-      <div className="px-6 py-4">
-        <p className="text-sm text-gray-400">
+      <div className="px-6 py-3">
+        <p className="text-xs text-white/35 italic tracking-wide">
           {currentMode === "digital" &&
-            "Selecciona fotos para enviar digitalmente"}
+            "Selecciona las fotos que deseas recibir digitalmente"}
           {currentMode === "album" &&
-            "Selecciona fotos para incluir en el álbum (de la selección Digital)"}
+            "De tu selección digital, elige las que irán en el álbum"}
           {currentMode === "cover" &&
-            `Selecciona ${COVER_LIMIT} fotos para la portada del álbum (de la selección Álbum)`}
+            `Elige ${COVER_LIMIT} fotos para la portada del álbum`}
         </p>
       </div>
 

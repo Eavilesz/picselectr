@@ -32,9 +32,9 @@ export default function PhotoCard({
 
   // Color configuration for each mode
   const modeColors = {
-    digital: { heart: "text-gray-400", ring: "ring-gray-400" },
-    album: { heart: "text-slate-400", ring: "ring-slate-500" },
-    cover: { heart: "text-amber-600", ring: "ring-amber-700" },
+    digital: { heart: "text-white", ring: "ring-white" },
+    album: { heart: "text-rose-300", ring: "ring-rose-300" },
+    cover: { heart: "text-amber-400", ring: "ring-amber-400" },
   };
 
   const currentColor = modeColors[currentMode];
@@ -61,28 +61,31 @@ export default function PhotoCard({
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
       </button>
 
-      {/* Selection Indicator - Shows highest level selection */}
+      {/* Selection border overlay */}
       {selectionType && (
         <div
-          className={`absolute top-1 right-1 w-2 h-2 ${
+          className={`absolute inset-0 pointer-events-none ring-2 ring-inset ${
             selectionType === "cover"
-              ? "bg-amber-700"
+              ? "ring-amber-400"
               : selectionType === "album"
-                ? "bg-slate-500"
-                : "bg-gray-400"
+                ? "ring-rose-300"
+                : "ring-white/70"
           }`}
         />
       )}
 
+      {/* Gradient vignette for heart legibility */}
+      <div className="absolute top-0 left-0 w-14 h-14 bg-linear-to-br from-black/50 to-transparent pointer-events-none z-10" />
+
       {/* Heart Icon - Separate clickable area */}
       <button
         onClick={handleHeartClick}
-        className={`absolute top-1 left-1 z-10 p-2 focus:outline-none focus:ring-2 ${displayColor.ring} focus:ring-offset-2 focus:ring-offset-black hover:bg-black/20 transition-colors`}
-        aria-label={isSelected ? "Unselect photo" : "Select photo"}
+        className="absolute top-1.5 left-1.5 z-20 p-1.5 focus:outline-none hover:scale-110 transition-transform"
+        aria-label={isSelected ? "Deseleccionar foto" : "Seleccionar foto"}
       >
         {isSelected ? (
           <svg
-            className={`w-6 h-6 md:w-7 md:h-7 ${currentColor.heart} drop-shadow-sm`}
+            className={`w-5 h-5 md:w-6 md:h-6 ${currentColor.heart} drop-shadow-md`}
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -90,7 +93,7 @@ export default function PhotoCard({
           </svg>
         ) : (
           <svg
-            className={`w-6 h-6 md:w-7 md:h-7 ${currentColor.heart}/80 drop-shadow-sm`}
+            className="w-5 h-5 md:w-6 md:h-6 text-white/50 drop-shadow-md"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
