@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { mockClients } from "./mock-data";
-import { EVENT_LABELS, PRODUCT_LABELS, ProductType } from "./types";
+import { getStoredProducts } from "./store";
+import { Client, EVENT_LABELS, PRODUCT_LABELS, ProductType } from "./types";
 import { CopyButton } from "./products/[slug]/CopyButton";
 
 const PRODUCT_COLORS: Record<ProductType, string> = {
@@ -18,8 +22,11 @@ function formatDeadline(iso: string | null) {
 }
 
 export default function AdminPage() {
-  const ready = mockClients.filter((c) => c.isReady).length;
-  const inProgress = mockClients.length - ready;
+  const [storedProducts] = useState<Client[]>(() => getStoredProducts());
+
+  const allProducts = [...mockClients, ...storedProducts];
+  const ready = allProducts.filter((c) => c.isReady).length;
+  const inProgress = allProducts.length - ready;
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -32,7 +39,7 @@ export default function AdminPage() {
           <h1 className="text-2xl font-medium text-white">Productos</h1>
         </div>
         <Link
-          href="/admin/clients/new"
+          href="/admin/products/new"
           className="inline-flex items-center gap-2 bg-neutral-700 text-neutral-200 text-xs tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-neutral-600 transition-colors"
         >
           <svg
@@ -51,7 +58,7 @@ export default function AdminPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
         {[
-          { label: "Total", value: mockClients.length },
+          { label: "Total", value: allProducts.length },
           { label: "En progreso", value: inProgress },
           { label: "Listos", value: ready },
         ].map((stat) => (
@@ -91,7 +98,7 @@ export default function AdminPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
-            {mockClients.map((client) => (
+            {allProducts.map((client) => (
               <tr
                 key={client.id}
                 className="hover:bg-white/5 transition-colors group"
