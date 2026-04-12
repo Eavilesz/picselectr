@@ -22,7 +22,31 @@ A photo selection tool for photographers. Clients receive a unique link to brows
 - `Client` — holds `slug`, `name`, `eventType`, `deadline`, `products[]`, progress counters (`digitalSelected`, `albumSelected`, `coverSelected`), and `isReady`
 - `Product` — `type` (`"digital"` | `"album"`), `photoLimit`, optional `includesCover`
 - `EventType` — `"wedding"` | `"birthday"` | `"photobooth"` | `"quinceañera"` | `"other"`
-- Mock data lives in `app/admin/mock-data.ts`
+- Mock data lives in `app/admin/mock-data.ts` (not used in the products list — kept only as a reference for the data shape)
+
+## Product CRUD
+
+All CRUD operations are centralized in `app/admin/store.ts`. The admin dashboard only shows products from this store — **no mock data is mixed in**.
+
+**Current implementation:** localStorage (client-side only, for prototyping).
+
+**Planned migration:** All store functions will be replaced with API calls to a backend. When doing this migration, keep the same function signatures so call sites don't need to change:
+
+| Function                             | Responsibility                            |
+| ------------------------------------ | ----------------------------------------- |
+| `getStoredProducts()`                | Fetch all products (GET /products)        |
+| `addStoredProduct(product)`          | Create a product (POST /products)         |
+| `updateStoredProduct(slug, updates)` | Partial update (PATCH /products/:slug)    |
+| `deleteStoredProduct(slug)`          | Delete a product (DELETE /products/:slug) |
+
+**Reactivity:** The store exposes `subscribeToProducts(callback)` for use with `useSyncExternalStore`. When migrating to an API, replace the listener system with polling, WebSockets, or server-sent events as appropriate. The subscriber contract must remain the same.
+
+**Product creation form** lives at `/admin/products/new` (`app/admin/products/new/page.tsx`). It:
+
+- Builds a `Client` object with a randomly generated `slug` (6-char alphanumeric)
+- Calls `addStoredProduct()` then redirects to `/admin`
+- Validates: name required, deadline required, at least one product type, valid photo limits, album limit must be less than digital limit
+- Wedding event type shows two name fields joined with " & "
 
 ## Stack
 
@@ -102,13 +126,16 @@ Colors are consistently applied to:
 ```
 app/
   admin/
-    page.tsx              # Products dashboard
+    page.tsx              # Products dashboard (useSyncExternalStore → store.ts)
     layout.tsx            # Admin shell with nav
     types.ts              # Shared types + label maps
-    mock-data.ts          # Mock product entries
+    store.ts              # CRUD layer (localStorage now, API later)
+    mock-data.ts          # Data shape reference only — not used in the UI
     products/[slug]/
-      page.tsx            # Product detail page
+      page.tsx            # Product detail page (client component, reads from store)
       CopyButton.tsx      # Client-side copy button
+    products/new/
+      page.tsx            # Product creation form
   page.tsx                # Client-facing selection page
 components/
   PhotoGallery.tsx
