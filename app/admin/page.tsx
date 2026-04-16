@@ -72,7 +72,7 @@ export default function AdminPage() {
           >
             <path d="M12 5v14M5 12h14" />
           </svg>
-          Nuevo producto
+          Nuevo paquete
         </Link>
       </div>
 

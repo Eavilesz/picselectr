@@ -99,7 +99,7 @@ export default function NewProductPage() {
         <p className="text-[10px] tracking-[0.3em] uppercase text-neutral-500 mb-1">
           Admin
         </p>
-        <h1 className="text-2xl font-medium text-white">Nuevo producto</h1>
+        <h1 className="text-2xl font-medium text-white">Nuevo paquete</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
