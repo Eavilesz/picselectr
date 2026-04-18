@@ -91,7 +91,7 @@ export default function ClientDetailPage({
           <p className="text-[10px] tracking-[0.3em] uppercase text-neutral-500 mb-1">
             {client.name} · {EVENT_LABELS[client.eventType]}
           </p>
-          <h1 className="text-2xl font-medium text-white">Producto</h1>
+          <h1 className="text-2xl font-medium text-white">Evento</h1>
         </div>
         <a
           href={clientPath}

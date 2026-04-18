@@ -4,22 +4,8 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { deleteStoredProduct, updateStoredProduct } from "./store";
-import { Client, EVENT_LABELS, PRODUCT_LABELS, ProductType } from "./types";
+import { Client, EVENT_LABELS } from "./types";
 import { CopyButton } from "./[slug]/CopyButton";
-
-const PRODUCT_COLORS: Record<ProductType, string> = {
-  digital: "bg-white/10 text-neutral-300",
-  album: "bg-rose-900/30 text-rose-300",
-};
-
-function formatDeadline(iso: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("es-MX", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 export default function EventsTable({ products }: { products: Client[] }) {
   const router = useRouter();
@@ -75,9 +61,6 @@ export default function EventsTable({ products }: { products: Client[] }) {
               Límite
             </th>
             <th className="text-left px-5 py-3 text-[10px] tracking-[0.2em] uppercase text-neutral-500 font-medium">
-              Paquetes
-            </th>
-            <th className="text-left px-5 py-3 text-[10px] tracking-[0.2em] uppercase text-neutral-500 font-medium">
               Estado
             </th>
             <th className="px-5 py-3" />
@@ -115,23 +98,14 @@ export default function EventsTable({ products }: { products: Client[] }) {
                 {EVENT_LABELS[client.eventType]}
               </td>
 
-              {/* Deadline */}
+              {/* Photo limit */}
               <td className="px-5 py-4 text-neutral-400 tabular-nums">
-                {formatDeadline(client.deadline)}
-              </td>
-
-              {/* Products */}
-              <td className="px-5 py-4">
-                <div className="flex gap-1.5 flex-wrap">
-                  {client.products.map((p) => (
-                    <span
-                      key={p.type}
-                      className={`text-[10px] tracking-widest uppercase px-2 py-0.5 ${PRODUCT_COLORS[p.type]}`}
-                    >
-                      {PRODUCT_LABELS[p.type]}
-                    </span>
-                  ))}
-                </div>
+                <span>{client.photoLimit ?? "—"}</span>
+                {client.albumLimit != null && (
+                  <span className="ml-1 text-neutral-600">
+                    · {client.albumLimit} álbum
+                  </span>
+                )}
               </td>
 
               {/* Status — click to toggle */}

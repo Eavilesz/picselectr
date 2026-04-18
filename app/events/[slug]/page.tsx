@@ -1,21 +1,8 @@
-"use client";
-
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getStoredProducts } from "../store";
-import { EVENT_LABELS, PRODUCT_LABELS, ProductType } from "../types";
+import { EVENT_LABELS } from "../types";
 import { CopyButton } from "./CopyButton";
-
-const PRODUCT_COLORS: Record<ProductType, string> = {
-  digital: "border-white/15 text-neutral-300",
-  album: "border-rose-400/30 text-rose-300",
-};
-
-const PRODUCT_BAR_COLORS: Record<ProductType, string> = {
-  digital: "bg-white",
-  album: "bg-rose-400",
-};
 
 function formatDeadline(iso: string | null) {
   if (!iso) return "—";
@@ -31,12 +18,10 @@ function ProgressBar({
   label,
   selected,
   total,
-  type,
 }: {
   label: string;
   selected: number;
   total: number;
-  type: ProductType;
 }) {
   const pct = total > 0 ? Math.round((selected / total) * 100) : 0;
   return (
@@ -49,7 +34,7 @@ function ProgressBar({
       </div>
       <div className="h-px bg-white/10 overflow-hidden">
         <div
-          className={`h-full transition-all ${PRODUCT_BAR_COLORS[type]}`}
+          className="h-full bg-white transition-all"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -57,15 +42,15 @@ function ProgressBar({
   );
 }
 
-export default function ProductDetailPage() {
-  const { slug } = useParams<{ slug: string }>();
-  const client = getStoredProducts().find((c) => c.slug === slug);
+export default async function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const products = await getStoredProducts();
+  const client = products.find((c) => c.slug === slug);
   if (!client) notFound();
-
-  const hasAlbum = client.products.some((p) => p.type === "album");
-  const albumProduct = client.products.find((p) => p.type === "album");
-  const digitalLimit =
-    client.products.find((p) => p.type === "digital")?.photoLimit ?? 0;
 
   const clientPath = `/select/${client.slug}`;
 
@@ -91,7 +76,7 @@ export default function ProductDetailPage() {
           <p className="text-[10px] tracking-[0.3em] uppercase text-neutral-500 mb-1">
             {client.name} · {EVENT_LABELS[client.eventType]}
           </p>
-          <h1 className="text-2xl font-medium text-white">Producto</h1>
+          <h1 className="text-2xl font-medium text-white">Evento</h1>
         </div>
         <a
           href={clientPath}
@@ -144,11 +129,15 @@ export default function ProductDetailPage() {
             </div>
             <div>
               <p className="text-[10px] tracking-[0.15em] uppercase text-neutral-500 mb-1">
-                Slug
+                Fotos digitales
               </p>
-              <p className="font-mono text-neutral-400 text-xs">
-                {client.slug}
+              <p className="text-neutral-200">{client.photoLimit ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-neutral-500 mb-1">
+                Fotos de álbum
               </p>
+              <p className="text-neutral-200">{client.albumLimit ?? "—"}</p>
             </div>
           </div>
 
@@ -164,26 +153,6 @@ export default function ProductDetailPage() {
               <CopyButton value={clientPath} />
             </div>
           </div>
-
-          {/* Products */}
-          <div className="pt-4 border-t border-white/10">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-3">
-              Eventos
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {client.products.map((p) => (
-                <span
-                  key={p.type}
-                  className={`text-[11px] tracking-widest uppercase px-3 py-1 border ${PRODUCT_COLORS[p.type]}`}
-                >
-                  {PRODUCT_LABELS[p.type]}
-                  {p.photoLimit != null && (
-                    <span className="ml-1.5 opacity-40">· {p.photoLimit}</span>
-                  )}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Progress card */}
@@ -193,30 +162,18 @@ export default function ProductDetailPage() {
           </p>
           <div className="space-y-5">
             <ProgressBar
-              label="Fotos digitales"
-              selected={client.digitalSelected}
-              total={digitalLimit}
-              type="digital"
+              label="Fotos seleccionadas"
+              selected={client.selected}
+              total={client.photoLimit ?? 0}
             />
-            {hasAlbum && (
+            {client.albumLimit != null && (
               <ProgressBar
                 label="Álbum"
-                selected={client.albumSelected}
-                total={client.digitalSelected}
-                type="album"
-              />
-            )}
-            {hasAlbum && albumProduct?.includesCover && (
-              <ProgressBar
-                label="Portada"
-                selected={client.coverSelected}
-                total={2}
-                type="album"
+                selected={0}
+                total={client.albumLimit}
               />
             )}
           </div>
-
-          {/* Status */}
           <div className="mt-6 pt-5 border-t border-white/10">
             <span className="inline-flex items-center gap-2">
               <span
@@ -233,6 +190,7 @@ export default function ProductDetailPage() {
               </span>
             </span>
           </div>
+
         </div>
       </div>
     </div>

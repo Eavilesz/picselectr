@@ -5,25 +5,16 @@ export type EventType =
   | "quinceañera"
   | "other";
 
-export type ProductType = "digital" | "album";
-
-export interface Product {
-  type: ProductType;
-  photoLimit: number | null;
-  includesCover?: boolean;
-}
-
 export interface Client {
   id: string;
   slug: string;
   name: string;
   eventType: EventType;
   deadline: string | null;
-  products: Product[];
+  photoLimit: number | null;
+  albumLimit: number | null;
   isReady: boolean;
-  digitalSelected: number;
-  albumSelected: number;
-  coverSelected: number;
+  selected: number;
 }
 
 export const EVENT_LABELS: Record<EventType, string> = {
@@ -32,9 +23,4 @@ export const EVENT_LABELS: Record<EventType, string> = {
   photobooth: "Sesión de fotos",
   quinceañera: "Quinceañera",
   other: "Otro",
-};
-
-export const PRODUCT_LABELS: Record<ProductType, string> = {
-  digital: "Digital",
-  album: "Álbum",
 };
