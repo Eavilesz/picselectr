@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { EventType } from "../../types";
 import { addStoredProduct } from "../store";
+import { generateUploadSignature } from "./actions";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
   { value: "wedding", label: "Boda" },
@@ -29,6 +30,9 @@ export default function NewProductPage() {
   const [pin, setPin] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const clientName =
     eventType === "wedding"
@@ -59,6 +63,53 @@ export default function NewProductPage() {
     return Object.keys(e).length === 0;
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    setSelectedFiles((prev) => {
+      const existingNames = new Set(prev.map((f) => f.name));
+      return [...prev, ...files.filter((f) => !existingNames.has(f.name))];
+    });
+    // reset input so the same files can be re-added after removal
+    e.target.value = "";
+  }
+
+  async function uploadFilesToCloudinary(slug: string): Promise<void> {
+    const total = selectedFiles.length;
+    for (let i = 0; i < total; i++) {
+      const file = selectedFiles[i];
+      setUploadProgress(`Subiendo foto ${i + 1} de ${total}...`);
+
+      // Strip extension and special chars from filename to use as public_id
+      const publicId = file.name
+        .replace(/\.[^.]+$/, "")
+        .replace(/[^a-zA-Z0-9_-]/g, "_");
+
+      const { signature, timestamp, api_key, cloud_name, folder } =
+        await generateUploadSignature(slug, publicId);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("public_id", publicId);
+      formData.append("folder", folder);
+      formData.append("timestamp", String(timestamp));
+      formData.append("api_key", api_key);
+      formData.append("signature", signature);
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
+        { method: "POST", body: formData },
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(
+          `Error subiendo "${file.name}": ${err?.error?.message ?? res.statusText}`,
+        );
+      }
+    }
+    setUploadProgress(null);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
@@ -66,6 +117,9 @@ export default function NewProductPage() {
     const slug = generateSlug();
     setSubmitting(true);
     try {
+      if (selectedFiles.length > 0) {
+        await uploadFilesToCloudinary(slug);
+      }
       await addStoredProduct({
         id: slug,
         slug,
@@ -78,9 +132,15 @@ export default function NewProductPage() {
         selected: 0,
         pin,
       });
-    } catch {
+    } catch (err) {
       setSubmitting(false);
-      setErrors({ form: "Error al crear el evento. Intenta de nuevo." });
+      setUploadProgress(null);
+      setErrors({
+        form:
+          err instanceof Error
+            ? err.message
+            : "Error al crear el evento. Intenta de nuevo.",
+      });
       return;
     }
 
@@ -297,6 +357,33 @@ export default function NewProductPage() {
           )}
         </div>
 
+        {/* Photo upload */}
+        <div>
+          <p className="text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-3">
+            Fotos del evento
+          </p>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="text-xs tracking-[0.15em] uppercase px-4 py-2 border border-white/10 text-neutral-500 hover:border-white/20 hover:text-neutral-300 transition-colors"
+          >
+            + Agregar fotos
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <p className="mt-2 text-xs text-neutral-600">
+            {selectedFiles.length === 0
+              ? "Sin fotos — puedes agregarlas después"
+              : `${selectedFiles.length} foto${selectedFiles.length !== 1 ? "s" : ""} seleccionada${selectedFiles.length !== 1 ? "s" : ""}`}
+          </p>
+        </div>
+
         {/* Submit */}
         <div className="pt-2 flex items-center gap-4">
           <button
@@ -325,7 +412,7 @@ export default function NewProductPage() {
                 />
               </svg>
             )}
-            {submitting ? "Creando..." : "Crear evento"}
+            {uploadProgress ?? (submitting ? "Creando..." : "Crear evento")}
           </button>
           {!submitting && (
             <Link
