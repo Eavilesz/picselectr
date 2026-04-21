@@ -6,7 +6,7 @@ import EventsTable from "./EventsTable";
 export default async function AdminPage() {
   const [products, photoCounts] = await Promise.all([
     getStoredProducts(),
-    getPhotoCountsBySlug().catch(() => ({} as Record<string, number>)),
+    getPhotoCountsBySlug().catch(() => ({}) as Record<string, number>),
   ]);
 
   const ready = products.filter((c) => c.isReady).length;
