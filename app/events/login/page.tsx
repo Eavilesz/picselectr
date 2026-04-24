@@ -19,7 +19,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8">
           <p className="text-[10px] tracking-[0.3em] uppercase text-neutral-500 mb-1">
-            Pickselectr
+            Picselectr
           </p>
           <h1 className="text-2xl font-medium text-white">Iniciar sesión</h1>
         </div>

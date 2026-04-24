@@ -1,4 +1,4 @@
-# Pickselectr — Copilot Instructions
+# Picselectr — Copilot Instructions
 
 ## What this app does
 

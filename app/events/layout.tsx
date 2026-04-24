@@ -2,7 +2,7 @@ import Link from "next/link";
 import { logout } from "./login/actions";
 
 export const metadata = {
-  title: "Admin — Pickselectr",
+  title: "Admin — Picselectr",
 };
 
 export default function AdminLayout({
@@ -18,7 +18,7 @@ export default function AdminLayout({
           href="/events"
           className="text-xs tracking-[0.25em] uppercase font-medium text-white"
         >
-          Pickselectr
+          Picselectr
         </Link>
         <nav className="flex items-center gap-6">
           <Link

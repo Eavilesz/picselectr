@@ -8,7 +8,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const EVENTS_PREFIX = "pickselectr/events/";
+const EVENTS_PREFIX = "picselectr/events/";
 
 /**
  * Returns a map of { [slug]: photoCount } for all events.
@@ -29,7 +29,7 @@ export async function getPhotoCountsBySlug(): Promise<Record<string, number>> {
     });
 
     for (const resource of result.resources ?? []) {
-      // public_id looks like "pickselectr/events/<slug>/<filename>"
+      // public_id looks like "picselectr/events/<slug>/<filename>"
       const rest = (resource.public_id as string).slice(EVENTS_PREFIX.length);
       const slug = rest.split("/")[0];
       if (slug) {

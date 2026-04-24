@@ -4,7 +4,7 @@ import { useSyncExternalStore, useState, useTransition } from "react";
 import { verifyEventPin } from "@/app/events/store";
 
 const SESSION_KEY = (slug: string) => `pin_verified_${slug}`;
-const PIN_EVENT = "pickselectr:pin-verified";
+const PIN_EVENT = "picselectr:pin-verified";
 const MAX_ATTEMPTS = 5;
 
 function subscribe(callback: () => void) {

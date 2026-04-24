@@ -18,7 +18,7 @@ export async function generateUploadSignature(
   cloud_name: string;
   folder: string;
 }> {
-  const folder = `pickselectr/events/${slug}`;
+  const folder = `picselectr/events/${slug}`;
   const timestamp = Math.round(Date.now() / 1000);
 
   const signature = cloudinary.utils.api_sign_request(
