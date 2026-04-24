@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { EventType } from "../../types";
+import { EventType } from "../types";
 import { addStoredProduct } from "../store";
 import { generateUploadSignature } from "./actions";
 
