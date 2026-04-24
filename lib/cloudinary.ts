@@ -10,6 +10,44 @@ cloudinary.config({
 
 const EVENTS_PREFIX = "picselectr/events/";
 
+export interface CloudinaryPhoto {
+  id: number;
+  url: string;
+  alt: string;
+}
+
+/**
+ * Returns all photos for a given event slug.
+ */
+export async function getPhotosBySlug(
+  slug: string,
+): Promise<CloudinaryPhoto[]> {
+  const photos: CloudinaryPhoto[] = [];
+  let nextCursor: string | undefined;
+
+  do {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result: any = await cloudinary.api.resources({
+      type: "upload",
+      prefix: `${EVENTS_PREFIX}${slug}/`,
+      max_results: 500,
+      ...(nextCursor ? { next_cursor: nextCursor } : {}),
+    });
+
+    for (const resource of result.resources ?? []) {
+      photos.push({
+        id: photos.length + 1,
+        url: resource.secure_url as string,
+        alt: `Foto ${photos.length + 1}`,
+      });
+    }
+
+    nextCursor = result.next_cursor;
+  } while (nextCursor);
+
+  return photos;
+}
+
 /**
  * Returns a map of { [slug]: photoCount } for all events.
  * Uses a single Cloudinary Admin API call and groups results by slug.

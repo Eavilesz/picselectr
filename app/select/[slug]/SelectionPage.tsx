@@ -6,12 +6,7 @@ import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
 import { Client, EventType } from "@/app/events/types";
-
-const mockPhotos = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  url: `https://picsum.photos/seed/${i + 1}/800/800`,
-  alt: `Foto ${i + 1}`,
-}));
+import { CloudinaryPhoto } from "@/lib/cloudinary";
 
 const EVENT_TITLE_LABELS: Record<EventType, string> = {
   wedding: "La Boda de",
@@ -23,13 +18,15 @@ const EVENT_TITLE_LABELS: Record<EventType, string> = {
 
 const COVER_LIMIT = 2;
 
-interface Photo {
-  id: number;
-  url: string;
-  alt: string;
-}
+type Photo = CloudinaryPhoto;
 
-export default function SelectionPage({ client }: { client: Client }) {
+export default function SelectionPage({
+  client,
+  photos,
+}: {
+  client: Client;
+  photos: Photo[];
+}) {
   const albumOnly = client.photoLimit == null && client.albumLimit != null;
   const hasAlbum = client.albumLimit != null;
 
@@ -137,14 +134,14 @@ export default function SelectionPage({ client }: { client: Client }) {
   const getAvailablePhotos = () => {
     switch (currentMode) {
       case "digital":
-        return mockPhotos;
+        return photos;
       case "album":
         // album-only: all photos available; otherwise filtered by digital selection
         return albumOnly
-          ? mockPhotos
-          : mockPhotos.filter((p) => digitalPhotos.has(p.id));
+          ? photos
+          : photos.filter((p) => digitalPhotos.has(p.id));
       case "cover":
-        return mockPhotos.filter((p) => albumPhotos.has(p.id));
+        return photos.filter((p) => albumPhotos.has(p.id));
     }
   };
 
@@ -177,13 +174,13 @@ export default function SelectionPage({ client }: { client: Client }) {
           counts={{
             digital: {
               selected: digitalPhotos.size,
-              total: client.photoLimit ?? mockPhotos.length,
+              total: client.photoLimit ?? photos.length,
             },
             album: {
               selected: albumPhotos.size,
               total:
                 client.albumLimit ??
-                (albumOnly ? mockPhotos.length : digitalPhotos.size),
+                (albumOnly ? photos.length : digitalPhotos.size),
             },
             cover: { selected: coverPhotos.size, total: COVER_LIMIT },
           }}
@@ -205,14 +202,22 @@ export default function SelectionPage({ client }: { client: Client }) {
       </div>
 
       {/* Photo Grid */}
-      <PhotoGallery
-        photos={availablePhotos}
-        selectedPhotos={currentSelection}
-        currentMode={currentMode}
-        getSelectionType={getSelectionType}
-        onToggle={togglePhoto}
-        onPreview={setPreviewPhoto}
-      />
+      {availablePhotos.length === 0 ? (
+        <div className="flex flex-col items-center justify-center px-6 py-24 text-center">
+          <p className="text-white/30 text-sm tracking-widest uppercase">
+            Sin fotos
+          </p>
+        </div>
+      ) : (
+        <PhotoGallery
+          photos={availablePhotos}
+          selectedPhotos={currentSelection}
+          currentMode={currentMode}
+          getSelectionType={getSelectionType}
+          onToggle={togglePhoto}
+          onPreview={setPreviewPhoto}
+        />
+      )}
 
       {/* Save Button */}
       <SelectionButton
