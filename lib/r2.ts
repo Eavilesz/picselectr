@@ -74,7 +74,9 @@ export async function deleteEventPhotos(slug: string): Promise<void> {
     const keys = (result.Contents ?? []).map((obj) => obj.Key!).filter(Boolean);
     await Promise.all(keys.map((key) => deleteR2Object(key)));
 
-    continuationToken = result.IsTruncated ? result.NextContinuationToken : undefined;
+    continuationToken = result.IsTruncated
+      ? result.NextContinuationToken
+      : undefined;
   } while (continuationToken);
 }
 
@@ -111,9 +113,7 @@ export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
 export async function getPhotoCountsBySlug(): Promise<Record<string, number>> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("photos")
-    .select("event_slug");
+  const { data, error } = await supabase.from("photos").select("event_slug");
 
   if (error || !data) return {};
 
