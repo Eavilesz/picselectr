@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import PhotoGallery from "@/components/PhotoGallery";
 import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
@@ -17,6 +17,8 @@ const EVENT_TITLE_LABELS: Record<EventType, string> = {
 };
 
 const COVER_LIMIT = 2;
+const INITIAL_BATCH = 60;
+const BATCH_SIZE = 40;
 
 type LocalPhoto = Photo;
 
@@ -37,6 +39,29 @@ export default function SelectionPage({
   const [albumPhotos, setAlbumPhotos] = useState<Set<string>>(new Set());
   const [coverPhotos, setCoverPhotos] = useState<Set<string>>(new Set());
   const [previewPhoto, setPreviewPhoto] = useState<LocalPhoto | null>(null);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const handleModeChange = useCallback((mode: SelectionMode) => {
+    setCurrentMode(mode);
+    setVisibleCount(INITIAL_BATCH);
+  }, []);
+
+  // Infinite scroll: load more photos when sentinel enters the viewport
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + BATCH_SIZE);
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [visibleCount]);
 
   const getCurrentSelection = () => {
     switch (currentMode) {
@@ -146,6 +171,7 @@ export default function SelectionPage({
   };
 
   const availablePhotos = getAvailablePhotos();
+  const visiblePhotos = availablePhotos.slice(0, visibleCount);
   const titleLabel = EVENT_TITLE_LABELS[client.eventType];
 
   return (
@@ -167,7 +193,7 @@ export default function SelectionPage({
       {(hasAlbum || !albumOnly) && (
         <SelectionModeNav
           currentMode={currentMode}
-          onModeChange={setCurrentMode}
+          onModeChange={handleModeChange}
           modes={
             albumOnly ? ["album", "cover"] : hasAlbum ? undefined : ["digital"]
           }
@@ -209,14 +235,19 @@ export default function SelectionPage({
           </p>
         </div>
       ) : (
-        <PhotoGallery
-          photos={availablePhotos}
-          selectedPhotos={currentSelection}
-          currentMode={currentMode}
-          getSelectionType={getSelectionType}
-          onToggle={togglePhoto}
-          onPreview={setPreviewPhoto}
-        />
+        <>
+          <PhotoGallery
+            photos={visiblePhotos}
+            selectedPhotos={currentSelection}
+            currentMode={currentMode}
+            getSelectionType={getSelectionType}
+            onToggle={togglePhoto}
+            onPreview={setPreviewPhoto}
+          />
+          {visibleCount < availablePhotos.length && (
+            <div ref={sentinelRef} className="h-24" />
+          )}
+        </>
       )}
 
       {/* Save Button */}
