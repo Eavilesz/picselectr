@@ -43,6 +43,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const order = typeof orderRaw === "string" ? parseInt(orderRaw, 10) : 0;
 
+  // Extract original filename without extension
+  const originalName =
+    "name" in file && typeof (file as File).name === "string"
+      ? (file as File).name.replace(/\.[^.]+$/, "")
+      : null;
+
   // Validate slug belongs to an existing event (prevents unauthorized uploads)
   const { data: eventRow, error: eventError } = await supabase
     .from("events")
@@ -111,6 +117,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       original_key: originalKey,
       thumbnail_key: thumbnailKey,
       display_order: order,
+      name: originalName,
     })
     .select("id, original_key, thumbnail_key, display_order")
     .single();

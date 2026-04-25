@@ -1,8 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getStoredProducts, getSelections } from "../store";
 import { EVENT_LABELS } from "../types";
 import { CopyButton } from "./CopyButton";
+import { getPhotosByIds } from "@/lib/r2";
 
 function formatDeadline(iso: string | null) {
   if (!iso) return "—";
@@ -54,6 +56,17 @@ export default async function ProductDetailPage({
   ]);
   const client = products.find((c) => c.slug === slug);
   if (!client) notFound();
+
+  // Fetch photos for each selection tier (only what was selected)
+  const allSelectedIds = [
+    ...new Set([
+      ...selections.digital,
+      ...selections.album,
+      ...selections.cover,
+    ]),
+  ];
+  const selectedPhotos = await getPhotosByIds(allSelectedIds);
+  const photoMap = new Map(selectedPhotos.map((p) => [p.id, p]));
 
   const clientPath = `/select/${client.slug}`;
 
@@ -217,6 +230,77 @@ export default async function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Selected photos section */}
+      {allSelectedIds.length > 0 && (
+        <div className="mt-5 space-y-5">
+          {(
+            [
+              {
+                key: "digital" as const,
+                label: "Digital",
+                ids: selections.digital,
+                dot: "bg-neutral-400",
+              },
+              {
+                key: "album" as const,
+                label: "Álbum",
+                ids: selections.album,
+                dot: "bg-slate-400",
+              },
+              {
+                key: "cover" as const,
+                label: "Portada",
+                ids: selections.cover,
+                dot: "bg-amber-600",
+              },
+            ] as const
+          )
+            .filter(({ ids }) => ids.length > 0)
+            .map(({ label, ids, dot }) => (
+              <div
+                key={label}
+                className="bg-neutral-900 border border-white/10 p-6"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+                  <p className="text-[10px] tracking-[0.2em] uppercase text-neutral-500">
+                    {label}
+                  </p>
+                  <span className="text-[10px] text-neutral-600 tabular-nums ml-auto">
+                    {ids.length} foto{ids.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+                  {ids.map((id) => {
+                    const photo = photoMap.get(id);
+                    if (!photo) return null;
+                    const displayName = photo.name ?? id.slice(0, 8);
+                    return (
+                      <div key={id} className="flex flex-col gap-1.5">
+                        <div className="relative aspect-square overflow-hidden bg-neutral-800">
+                          <Image
+                            src={photo.thumbnailUrl}
+                            alt={displayName}
+                            fill
+                            className="object-cover"
+                            sizes="120px"
+                          />
+                        </div>
+                        <p
+                          className="text-[10px] text-neutral-500 truncate leading-tight"
+                          title={displayName}
+                        >
+                          {displayName}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
     </div>
   );
 }

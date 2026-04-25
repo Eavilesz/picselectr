@@ -33,6 +33,7 @@ export interface Photo {
   originalUrl: string;
   thumbnailUrl: string;
   alt: string;
+  name: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -89,6 +90,7 @@ interface PhotoRow {
   original_key: string;
   thumbnail_key: string;
   display_order: number;
+  name: string | null;
 }
 
 export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
@@ -96,7 +98,7 @@ export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
 
   const { data, error } = await supabase
     .from("photos")
-    .select("id, original_key, thumbnail_key, display_order")
+    .select("id, original_key, thumbnail_key, display_order, name")
     .eq("event_slug", slug)
     .order("display_order", { ascending: true });
 
@@ -107,6 +109,28 @@ export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
     originalUrl: `${PUBLIC_URL}/${row.original_key}`,
     thumbnailUrl: `${PUBLIC_URL}/${row.thumbnail_key}`,
     alt: `Foto ${i + 1}`,
+    name: row.name ?? null,
+  }));
+}
+
+export async function getPhotosByIds(ids: string[]): Promise<Photo[]> {
+  if (ids.length === 0) return [];
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("photos")
+    .select("id, original_key, thumbnail_key, display_order, name")
+    .in("id", ids)
+    .order("display_order", { ascending: true });
+
+  if (error || !data) return [];
+
+  return (data as PhotoRow[]).map((row, i) => ({
+    id: row.id,
+    originalUrl: `${PUBLIC_URL}/${row.original_key}`,
+    thumbnailUrl: `${PUBLIC_URL}/${row.thumbnail_key}`,
+    alt: `Foto ${i + 1}`,
+    name: row.name ?? null,
   }));
 }
 
