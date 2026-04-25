@@ -1,17 +1,18 @@
 import PhotoCard, { SelectionMode } from "./PhotoCard";
 
 interface Photo {
-  id: number;
-  url: string;
+  id: string;
+  originalUrl: string;
+  thumbnailUrl: string;
   alt: string;
 }
 
 interface PhotoGalleryProps {
   photos: Photo[];
-  selectedPhotos: Set<number>;
+  selectedPhotos: Set<string>;
   currentMode: SelectionMode;
-  getSelectionType: (id: number) => "digital" | "album" | "cover" | null;
-  onToggle: (id: number) => void;
+  getSelectionType: (id: string) => "digital" | "album" | "cover" | null;
+  onToggle: (id: string) => void;
   onPreview: (photo: Photo) => void;
 }
 

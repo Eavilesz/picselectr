@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { Client } from "./types";
+import { deleteEventPhotos } from "@/lib/r2";
 
 // ---------------------------------------------------------------------------
 // Row types (as stored in Supabase)
@@ -141,7 +142,9 @@ export async function updateStoredProduct(
 export async function deleteStoredProduct(slug: string): Promise<void> {
   const supabase = await createClient();
 
-  // photos cascade-delete via FK
+  await deleteEventPhotos(slug);
+
+  // photos rows cascade-delete via FK
   const { error } = await supabase.from("events").delete().eq("slug", slug);
   if (error) throw new Error(error.message);
 }

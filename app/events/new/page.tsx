@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { EventType } from "../types";
 import { addStoredProduct } from "../store";
-import { generateUploadSignature } from "./actions";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
   { value: "wedding", label: "Boda" },
@@ -73,37 +72,26 @@ export default function NewProductPage() {
     e.target.value = "";
   }
 
-  async function uploadFilesToCloudinary(slug: string): Promise<void> {
+  async function uploadFilesToR2(slug: string): Promise<void> {
     const total = selectedFiles.length;
     for (let i = 0; i < total; i++) {
       const file = selectedFiles[i];
       setUploadProgress(`Subiendo foto ${i + 1} de ${total}...`);
 
-      // Strip extension and special chars from filename to use as public_id
-      const publicId = file.name
-        .replace(/\.[^.]+$/, "")
-        .replace(/[^a-zA-Z0-9_-]/g, "_");
-
-      const { signature, timestamp, api_key, cloud_name, folder } =
-        await generateUploadSignature(slug, publicId);
-
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("public_id", publicId);
-      formData.append("folder", folder);
-      formData.append("timestamp", String(timestamp));
-      formData.append("api_key", api_key);
-      formData.append("signature", signature);
+      formData.append("slug", slug);
+      formData.append("order", String(i));
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
-        { method: "POST", body: formData },
-      );
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(
-          `Error subiendo "${file.name}": ${err?.error?.message ?? res.statusText}`,
+          `Error subiendo "${file.name}": ${err?.error ?? res.statusText}`,
         );
       }
     }
@@ -117,9 +105,7 @@ export default function NewProductPage() {
     const slug = generateSlug();
     setSubmitting(true);
     try {
-      if (selectedFiles.length > 0) {
-        await uploadFilesToCloudinary(slug);
-      }
+      // Create the event row FIRST so the upload route can find it
       await addStoredProduct({
         id: slug,
         slug,
@@ -132,6 +118,9 @@ export default function NewProductPage() {
         selected: 0,
         pin,
       });
+      if (selectedFiles.length > 0) {
+        await uploadFilesToR2(slug);
+      }
     } catch (err) {
       setSubmitting(false);
       setUploadProgress(null);

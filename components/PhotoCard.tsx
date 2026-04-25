@@ -1,10 +1,9 @@
-import Image from "next/image";
-
 export type SelectionMode = "digital" | "album" | "cover";
 
 interface Photo {
-  id: number;
-  url: string;
+  id: string;
+  originalUrl: string;
+  thumbnailUrl: string;
   alt: string;
 }
 
@@ -49,12 +48,10 @@ export default function PhotoCard({
         onClick={onPreview}
         className={`absolute inset-0 w-full h-full focus:outline-none focus:ring-2 ${displayColor.ring} focus:ring-offset-2 focus:ring-offset-black`}
       >
-        <Image
-          src={photo.url}
+        <img
+          src={photo.thumbnailUrl}
           alt={photo.alt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 16vw"
+          className="absolute inset-0 w-full h-full object-cover"
         />
 
         {/* Overlay */}

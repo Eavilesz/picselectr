@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getStoredProducts } from "./store";
-import { getPhotoCountsBySlug } from "@/lib/cloudinary";
+import { getPhotoCountsBySlug } from "@/lib/r2";
 import EventsTable from "./EventsTable";
 
 export default async function AdminPage() {

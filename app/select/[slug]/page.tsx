@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getEventBySlug } from "@/app/events/store";
-import { getPhotosBySlug } from "@/lib/cloudinary";
+import { getPhotosBySlug } from "@/lib/r2";
 import SelectionPage from "./SelectionPage";
 import PinGate from "@/components/PinGate";
 

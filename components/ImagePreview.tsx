@@ -1,13 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export type SelectionMode = "digital" | "album" | "cover";
 
 interface Photo {
-  id: number;
-  url: string;
+  id: string;
+  originalUrl: string;
+  thumbnailUrl: string;
   alt: string;
 }
 
@@ -28,7 +28,7 @@ export default function ImagePreview({
   currentMode,
   selectionType,
 }: ImagePreviewProps) {
-  const [loadedPhotoId, setLoadedPhotoId] = useState<number | null>(null);
+  const [loadedPhotoId, setLoadedPhotoId] = useState<string | null>(null);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -47,8 +47,6 @@ export default function ImagePreview({
   }, [photo]);
 
   if (!photo) return null;
-
-  const isLoading = loadedPhotoId !== photo.id;
 
   // Color configuration for each mode
   const modeColors = {
@@ -129,22 +127,11 @@ export default function ImagePreview({
 
         {/* Image Container */}
         <div className="flex-1 relative flex items-center justify-center p-4">
-          {/* Loading Spinner */}
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-white" />
-            </div>
-          )}
-
-          <div className="relative w-full h-full max-w-6xl">
-            <Image
-              src={photo.url}
+          <div className="relative w-full h-full max-w-6xl flex items-center justify-center">
+            <img
+              src={photo.originalUrl}
               alt={photo.alt}
-              fill
-              className="object-contain"
-              sizes="(max-width: 1536px) 100vw, 1536px"
-              priority
-              onLoadingComplete={() => setLoadedPhotoId(photo.id)}
+              className="max-h-full max-w-full object-contain"
             />
           </div>
         </div>

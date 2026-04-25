@@ -6,7 +6,7 @@ import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
 import { Client, EventType } from "@/app/events/types";
-import { CloudinaryPhoto } from "@/lib/cloudinary";
+import { Photo } from "@/lib/r2";
 
 const EVENT_TITLE_LABELS: Record<EventType, string> = {
   wedding: "La Boda de",
@@ -18,14 +18,14 @@ const EVENT_TITLE_LABELS: Record<EventType, string> = {
 
 const COVER_LIMIT = 2;
 
-type Photo = CloudinaryPhoto;
+type LocalPhoto = Photo;
 
 export default function SelectionPage({
   client,
   photos,
 }: {
   client: Client;
-  photos: Photo[];
+  photos: LocalPhoto[];
 }) {
   const albumOnly = client.photoLimit == null && client.albumLimit != null;
   const hasAlbum = client.albumLimit != null;
@@ -33,10 +33,10 @@ export default function SelectionPage({
   const [currentMode, setCurrentMode] = useState<SelectionMode>(
     albumOnly ? "album" : "digital",
   );
-  const [digitalPhotos, setDigitalPhotos] = useState<Set<number>>(new Set());
-  const [albumPhotos, setAlbumPhotos] = useState<Set<number>>(new Set());
-  const [coverPhotos, setCoverPhotos] = useState<Set<number>>(new Set());
-  const [previewPhoto, setPreviewPhoto] = useState<Photo | null>(null);
+  const [digitalPhotos, setDigitalPhotos] = useState<Set<string>>(new Set());
+  const [albumPhotos, setAlbumPhotos] = useState<Set<string>>(new Set());
+  const [coverPhotos, setCoverPhotos] = useState<Set<string>>(new Set());
+  const [previewPhoto, setPreviewPhoto] = useState<LocalPhoto | null>(null);
 
   const getCurrentSelection = () => {
     switch (currentMode) {
@@ -49,7 +49,7 @@ export default function SelectionPage({
     }
   };
 
-  const togglePhoto = (id: number) => {
+  const togglePhoto = (id: string) => {
     switch (currentMode) {
       case "digital":
         setDigitalPhotos((prev) => {
@@ -115,7 +115,7 @@ export default function SelectionPage({
   };
 
   const getSelectionType = (
-    id: number,
+    id: string,
   ): "digital" | "album" | "cover" | null => {
     if (coverPhotos.has(id)) return "cover";
     if (albumPhotos.has(id)) return "album";
