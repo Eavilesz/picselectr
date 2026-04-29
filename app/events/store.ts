@@ -19,6 +19,8 @@ interface EventRow {
   album_limit: number | null;
   digital_selected: number;
   pin: string | null;
+  created_by: string | null;
+  studio_name: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -37,6 +39,7 @@ function toClient(event: EventRow): Client {
     albumLimit: event.album_limit,
     selected: event.digital_selected,
     pin: event.pin ?? undefined,
+    studioName: event.studio_name ?? null,
   };
 }
 
@@ -64,6 +67,9 @@ export async function addStoredProduct(product: Client): Promise<void> {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const studioName =
+    (user?.user_metadata?.studio_name as string | undefined) ?? null;
+
   const { error } = await supabase.from("events").insert({
     slug: product.slug,
     name: product.name,
@@ -75,6 +81,7 @@ export async function addStoredProduct(product: Client): Promise<void> {
     digital_selected: product.selected,
     pin: product.pin ?? null,
     created_by: user?.id,
+    studio_name: studioName,
   });
 
   if (error) throw new Error(error.message);
@@ -93,6 +100,24 @@ export async function getEventBySlug(slug: string): Promise<Client | null> {
   // Strip pin — never expose it to client components
   const { pin: _pin, ...client } = toClient(data as EventRow);
   return client;
+}
+
+// Returns the studio_name of the currently authenticated user
+export async function getStudioName(): Promise<string | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return (user?.user_metadata?.studio_name as string | undefined) ?? null;
+}
+
+// Updates the studio_name in the user's metadata
+export async function updateStudioName(studioName: string): Promise<void> {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({
+    data: { studio_name: studioName.trim() || null },
+  });
+  if (error) throw new Error(error.message);
 }
 
 export async function verifyEventPin(

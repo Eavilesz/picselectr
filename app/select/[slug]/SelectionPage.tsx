@@ -215,6 +215,11 @@ export default function SelectionPage({
     <div className="min-h-screen bg-black pb-36">
       {/* Header */}
       <header className="px-6 pt-14 pb-8">
+        {client.studioName && (
+          <p className="text-xs tracking-[0.25em] text-white/60 uppercase font-medium mb-4">
+            {client.studioName}
+          </p>
+        )}
         <p className="text-[10px] tracking-[0.35em] text-white/35 uppercase mb-5">
           Selección de fotos
         </p>

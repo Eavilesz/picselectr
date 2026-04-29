@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { getStoredProducts } from "./store";
+import { getStoredProducts, getStudioName } from "./store";
 import { getPhotoCountsBySlug } from "@/lib/r2";
 import EventsTable from "./EventsTable";
 
 export default async function AdminPage() {
-  const [products, photoCounts] = await Promise.all([
+  const [products, photoCounts, studioName] = await Promise.all([
     getStoredProducts(),
     getPhotoCountsBySlug().catch(() => ({}) as Record<string, number>),
+    getStudioName(),
   ]);
 
   const ready = products.filter((c) => c.isReady).length;
@@ -21,6 +22,11 @@ export default async function AdminPage() {
             Panel de administración
           </p>
           <h1 className="text-2xl font-medium text-white">Eventos</h1>
+          {studioName && (
+            <p className="mt-1 text-xs text-neutral-500 tracking-wide">
+              {studioName}
+            </p>
+          )}
         </div>
         <Link
           href="/events/new"

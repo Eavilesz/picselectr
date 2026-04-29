@@ -16,6 +16,7 @@ export interface Client {
   isReady: boolean;
   selected: number;
   pin?: string;
+  studioName?: string | null;
 }
 
 export const EVENT_LABELS: Record<EventType, string> = {
