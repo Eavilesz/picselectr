@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { Client } from "./types";
 import { deleteEventPhotos } from "@/lib/r2";
 
@@ -88,7 +89,7 @@ export async function addStoredProduct(product: Client): Promise<void> {
 }
 
 export async function getEventBySlug(slug: string): Promise<Client | null> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data, error } = await supabase
     .from("events")
@@ -124,7 +125,7 @@ export async function verifyEventPin(
   slug: string,
   inputPin: string,
 ): Promise<boolean> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data, error } = await supabase
     .from("events")
@@ -186,7 +187,7 @@ export interface Selections {
 }
 
 export async function getSelections(slug: string): Promise<Selections> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data } = await supabase
     .from("selections")
@@ -217,7 +218,7 @@ export async function saveSelections(
   album: string[],
   cover: string[],
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // Fetch event limits to determine readiness
   const { data: event } = await supabase
@@ -265,7 +266,7 @@ export async function saveWorkedOn(
   slug: string,
   workedOn: string[],
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // Update if row exists; insert (with empty selections) if it doesn't yet
   const { data } = await supabase
