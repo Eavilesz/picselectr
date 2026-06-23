@@ -302,7 +302,24 @@ export async function saveSelections(
     );
     const to = userData?.user?.email;
     if (to) {
-      await sendEmailNotification(to, ev.name);
+      // Fetch photo names for all selected tiers
+      const allIds = [...new Set([...digital, ...album, ...cover])];
+      const { data: photoRows } = await supabase
+        .from("photos")
+        .select("id, name")
+        .in("id", allIds);
+      const photoNames = new Map<string, string>(
+        (photoRows ?? []).map((r: { id: string; name: string | null }) => [
+          r.id,
+          r.name ?? r.id.slice(0, 8),
+        ]),
+      );
+      await sendEmailNotification(
+        to,
+        ev.name,
+        { digital, album, cover },
+        photoNames,
+      );
     }
   }
 }
@@ -334,12 +351,36 @@ export async function saveWorkedOn(
 async function sendEmailNotification(
   to: string,
   clientName: string,
+  selections: { digital: string[]; album: string[]; cover: string[] },
+  photoNames: Map<string, string>,
 ): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return;
 
   const from =
     process.env.RESEND_FROM_EMAIL ?? "Picselectr <onboarding@resend.dev>";
+
+  const formatList = (ids: string[]) =>
+    ids.map((id) => photoNames.get(id) ?? id.slice(0, 8)).join("\n");
+
+  const sections: string[] = [];
+  if (selections.digital.length > 0) {
+    sections.push(
+      `Digital (${selections.digital.length} fotos):\n${formatList(selections.digital)}`,
+    );
+  }
+  if (selections.album.length > 0) {
+    sections.push(
+      `Álbum (${selections.album.length} fotos):\n${formatList(selections.album)}`,
+    );
+  }
+  if (selections.cover.length > 0) {
+    sections.push(
+      `Portada (${selections.cover.length} fotos):\n${formatList(selections.cover)}`,
+    );
+  }
+
+  const photoList = sections.length > 0 ? `\n\n${sections.join("\n\n")}` : "";
 
   // Fire-and-forget — notification failure must never break the client save
   try {
@@ -353,7 +394,7 @@ async function sendEmailNotification(
         from,
         to: [to],
         subject: `${clientName} completó su selección de fotos`,
-        text: `¡${clientName} ha completado su selección de fotos! Entra a Picselectr para verla.`,
+        text: `${clientName} ha completado su selección de fotos. Entra a Picselectr para verla.${photoList}`,
       }),
     });
   } catch {
