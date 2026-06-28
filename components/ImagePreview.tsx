@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Photo } from "@/lib/r2";
 
 export type SelectionMode = "digital" | "album" | "cover";
@@ -27,6 +27,16 @@ export default function ImagePreview({
   onPrev,
 }: ImagePreviewProps) {
   const [loadedPhotoId, setLoadedPhotoId] = useState<string | null>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [imgWidth, setImgWidth] = useState<number | undefined>();
+
+  const updateImgWidth = () => {
+    if (imgRef.current) setImgWidth(imgRef.current.offsetWidth);
+  };
+
+  useEffect(() => {
+    setImgWidth(undefined);
+  }, [photo?.id]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -74,33 +84,6 @@ export default function ImagePreview({
         className="relative h-full flex items-center justify-center p-12"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Heart Icon — top-left corner */}
-        <button
-          onClick={handleToggle}
-          className="absolute top-3 left-3 z-20 p-2 bg-black/50 hover:bg-black/80 transition-colors"
-          aria-label={isSelected ? "Unselect photo" : "Select photo"}
-        >
-          {isSelected ? (
-            <svg
-              className={`w-7 h-7 ${currentColor.heart} drop-shadow-lg`}
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          ) : (
-            <svg
-              className={`w-7 h-7 ${currentColor.heart} drop-shadow-lg`}
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-          )}
-        </button>
-
         {/* Selection Type Indicator — top-center */}
         {selectionType && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 bg-black/50 border border-white/10">
@@ -114,6 +97,33 @@ export default function ImagePreview({
             </span>
           </div>
         )}
+
+        {/* Heart Button — top-left corner */}
+        <button
+          onClick={handleToggle}
+          className="absolute top-3 left-3 z-20 p-2 bg-black/50 hover:bg-black/80 transition-colors"
+          aria-label={isSelected ? "Unselect photo" : "Select photo"}
+        >
+          {isSelected ? (
+            <svg
+              className={`w-7 h-7 ${currentColor.heart}`}
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          ) : (
+            <svg
+              className={`w-7 h-7 ${currentColor.heart} opacity-30 hover:opacity-70 transition-opacity`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          )}
+        </button>
 
         {/* Close Button — top-right corner */}
         <button
@@ -155,12 +165,19 @@ export default function ImagePreview({
           </button>
         )}
 
-        <img
-          src={photo.originalUrl}
-          alt={photo.alt}
-          className="max-h-full max-w-full object-contain"
-          onClick={(e) => e.stopPropagation()}
-        />
+        <div className="flex flex-col items-center gap-3 max-h-full min-h-0">
+          <img
+            src={photo.originalUrl}
+            alt={photo.alt}
+            className="min-h-0 max-w-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+          {photo.name && (
+            <span className="text-xl tracking-[0.15em] text-white/60 uppercase shrink-0">
+              {photo.name}
+            </span>
+          )}
+        </div>
 
         {/* Next arrow */}
         {onNext && (
