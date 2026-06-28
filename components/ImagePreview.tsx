@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Photo } from "@/lib/r2";
 
 export type SelectionMode = "digital" | "album" | "cover";
@@ -27,16 +27,6 @@ export default function ImagePreview({
   onPrev,
 }: ImagePreviewProps) {
   const [loadedPhotoId, setLoadedPhotoId] = useState<string | null>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const [imgWidth, setImgWidth] = useState<number | undefined>();
-
-  const updateImgWidth = () => {
-    if (imgRef.current) setImgWidth(imgRef.current.offsetWidth);
-  };
-
-  useEffect(() => {
-    setImgWidth(undefined);
-  }, [photo?.id]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
