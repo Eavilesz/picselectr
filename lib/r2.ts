@@ -81,6 +81,37 @@ export async function deleteEventPhotos(slug: string): Promise<void> {
   } while (continuationToken);
 }
 
+export interface BucketUsage {
+  bytes: number;
+  objectCount: number;
+}
+
+export async function getBucketUsage(): Promise<BucketUsage> {
+  let bytes = 0;
+  let objectCount = 0;
+  let continuationToken: string | undefined;
+
+  do {
+    const result = await r2.send(
+      new ListObjectsV2Command({
+        Bucket: BUCKET,
+        ...(continuationToken ? { ContinuationToken: continuationToken } : {}),
+      }),
+    );
+
+    for (const obj of result.Contents ?? []) {
+      bytes += obj.Size ?? 0;
+      objectCount += 1;
+    }
+
+    continuationToken = result.IsTruncated
+      ? result.NextContinuationToken
+      : undefined;
+  } while (continuationToken);
+
+  return { bytes, objectCount };
+}
+
 // ---------------------------------------------------------------------------
 // Photo queries (backed by Supabase photos table)
 // ---------------------------------------------------------------------------
