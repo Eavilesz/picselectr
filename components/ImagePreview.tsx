@@ -155,11 +155,15 @@ export default function ImagePreview({
           </button>
         )}
 
-        <div className="flex flex-col items-center gap-3 max-h-full min-h-0">
+        <div
+          className="flex flex-col items-center gap-3 max-h-full min-h-0"
+          onContextMenu={(e) => e.preventDefault()}
+        >
           <img
             src={photo.originalUrl}
             alt={photo.alt}
-            className="min-h-0 max-w-full object-contain"
+            className="min-h-0 max-w-full object-contain select-none pointer-events-none [-webkit-touch-callout:none]"
+            draggable={false}
             onClick={(e) => e.stopPropagation()}
           />
           {photo.name && (

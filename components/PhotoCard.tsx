@@ -41,12 +41,14 @@ export default function PhotoCard({
       {/* Image - Clickable for preview */}
       <button
         onClick={onPreview}
+        onContextMenu={(e) => e.preventDefault()}
         className={`absolute inset-0 w-full h-full focus:outline-none focus:ring-2 ${displayColor.ring} focus:ring-offset-2 focus:ring-offset-black`}
       >
         <img
           src={photo.thumbnailUrl}
           alt={photo.alt}
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none [-webkit-touch-callout:none]"
+          draggable={false}
         />
 
         {/* Overlay */}
