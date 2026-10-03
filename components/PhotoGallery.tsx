@@ -21,10 +21,11 @@ export default function PhotoGallery({
   return (
     <div>
       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-0.5">
-        {photos.map((photo) => (
+        {photos.map((photo, i) => (
           <PhotoCard
             key={photo.id}
             photo={photo}
+            index={i + 1}
             isSelected={selectedPhotos.has(photo.id)}
             selectionType={getSelectionType(photo.id)}
             currentMode={currentMode}

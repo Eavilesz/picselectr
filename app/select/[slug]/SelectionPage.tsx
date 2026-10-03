@@ -232,6 +232,14 @@ export default function SelectionPage({
           <em>{client.name}</em>
         </h1>
         <div className="mt-6 w-12 h-px bg-white/20" />
+        <p className="mt-5 flex items-baseline gap-2 text-white">
+          <span className="text-3xl md:text-4xl font-serif tabular-nums">
+            {photos.length}
+          </span>
+          <span className="text-xs tracking-[0.3em] text-white/60 uppercase">
+            {photos.length === 1 ? "foto" : "fotos"}
+          </span>
+        </p>
       </header>
 
       {/* Deadline Warning */}
