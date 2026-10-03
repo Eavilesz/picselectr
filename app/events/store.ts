@@ -243,15 +243,41 @@ export async function getSelections(slug: string): Promise<Selections> {
 
 const COVER_LIMIT = 2;
 
-export async function saveSelections(
+interface EventLimits {
+  photo_limit: number | null;
+  album_limit: number | null;
+  is_ready: boolean;
+  created_by: string | null;
+  name: string;
+}
+
+// All applicable slots must be filled for a selection to be complete
+function isSelectionComplete(
+  ev: EventLimits | null,
+  digital: string[],
+  album: string[],
+  cover: string[],
+): boolean {
+  // events with neither limit have nothing to complete
+  if (ev?.photo_limit == null && ev?.album_limit == null) return false;
+  if (ev?.photo_limit != null && digital.length < ev.photo_limit) return false;
+  if (ev?.album_limit != null) {
+    if (album.length < ev.album_limit) return false;
+    if (cover.length < COVER_LIMIT) return false;
+  }
+  return true;
+}
+
+// Upserts the selection row (worked_on is preserved via onConflict) and
+// returns the event's limits/state for the caller.
+async function persistSelections(
   slug: string,
   digital: string[],
   album: string[],
   cover: string[],
-): Promise<void> {
+): Promise<EventLimits | null> {
   const supabase = createServiceClient();
 
-  // Fetch event limits, previous ready state, and owner to determine readiness and notify
   const { data: event } = await supabase
     .from("events")
     .select("photo_limit, album_limit, is_ready, created_by, name")
@@ -271,32 +297,57 @@ export async function saveSelections(
 
   if (error) throw new Error(error.message);
 
-  // Compute isReady: all applicable slots must be filled
-  // (worked_on is preserved via onConflict — only digital/album/cover are updated)
-  const ev = event as {
-    photo_limit: number | null;
-    album_limit: number | null;
-    is_ready: boolean;
-    created_by: string | null;
-    name: string;
-  } | null;
-  let isReady = true;
-  if (ev?.photo_limit != null)
-    isReady = isReady && digital.length >= ev.photo_limit;
-  if (ev?.album_limit != null) {
-    isReady = isReady && album.length >= ev.album_limit;
-    isReady = isReady && cover.length >= COVER_LIMIT;
+  return event as EventLimits | null;
+}
+
+// Autosave: stores the current selection without notifying anyone.
+// If the event was already finalized but the selection is no longer complete,
+// it goes back to "in progress".
+export async function saveSelections(
+  slug: string,
+  digital: string[],
+  album: string[],
+  cover: string[],
+): Promise<void> {
+  const supabase = createServiceClient();
+  const ev = await persistSelections(slug, digital, album, cover);
+
+  const update: { digital_selected: number; is_ready?: boolean } = {
+    digital_selected: digital.length,
+  };
+  if (ev?.is_ready && !isSelectionComplete(ev, digital, album, cover)) {
+    update.is_ready = false;
   }
-  // album-only events (no photoLimit but has albumLimit)
-  if (ev?.photo_limit == null && ev?.album_limit == null) isReady = false;
+
+  await supabase.from("events").update(update).eq("slug", slug);
+}
+
+// Explicit "Finalizar selección": validates completeness, marks the event
+// ready and emails the photographer on the first transition to ready.
+export async function finalizeSelections(
+  slug: string,
+  digital: string[],
+  album: string[],
+  cover: string[],
+): Promise<void> {
+  const supabase = createServiceClient();
+  const ev = await persistSelections(slug, digital, album, cover);
+
+  if (!isSelectionComplete(ev, digital, album, cover)) {
+    await supabase
+      .from("events")
+      .update({ digital_selected: digital.length })
+      .eq("slug", slug);
+    throw new Error("La selección está incompleta");
+  }
 
   await supabase
     .from("events")
-    .update({ digital_selected: digital.length, is_ready: isReady })
+    .update({ digital_selected: digital.length, is_ready: true })
     .eq("slug", slug);
 
   // Send email notification only when transitioning to ready for the first time
-  if (isReady && ev?.is_ready === false && ev.created_by) {
+  if (ev?.is_ready === false && ev.created_by) {
     const { data: userData } = await supabase.auth.admin.getUserById(
       ev.created_by,
     );

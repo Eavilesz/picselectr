@@ -7,7 +7,11 @@ import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
 import { Client, EventType } from "@/app/events/types";
 import { Photo } from "@/lib/r2";
-import { saveSelections, Selections } from "@/app/events/store";
+import {
+  saveSelections,
+  finalizeSelections,
+  Selections,
+} from "@/app/events/store";
 
 const EVENT_TITLE_LABELS: Record<EventType, string> = {
   wedding: "La Boda de",
@@ -20,6 +24,10 @@ const EVENT_TITLE_LABELS: Record<EventType, string> = {
 const COVER_LIMIT = 2;
 const INITIAL_BATCH = 60;
 const BATCH_SIZE = 40;
+const AUTOSAVE_DELAY = 1500;
+const RETRY_DELAY = 5000;
+
+export type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 type LocalPhoto = Photo;
 
@@ -49,14 +57,97 @@ export default function SelectionPage({
   );
   const [previewPhoto, setPreviewPhoto] = useState<LocalPhoto | null>(null);
   const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH);
-  const [isSaving, setIsSaving] = useState(false);
-  const [savedOk, setSavedOk] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [isFinalized, setIsFinalized] = useState(client.isReady);
+  const [isFinalizing, setIsFinalizing] = useState(false);
+  const [finalizeError, setFinalizeError] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Reset "saved" state when the user changes their selection
+  // Autosave bookkeeping (refs so the debounced flush always sees fresh data)
+  const latestRef = useRef({ digitalPhotos, albumPhotos, coverPhotos });
+  latestRef.current = { digitalPhotos, albumPhotos, coverPhotos };
+  const dirtyRef = useRef(false);
+  const inFlightRef = useRef<Promise<void> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstRender = useRef(true);
+
+  const isComplete =
+    (client.photoLimit == null || digitalPhotos.size >= client.photoLimit) &&
+    (client.albumLimit == null ||
+      (albumPhotos.size >= client.albumLimit &&
+        coverPhotos.size >= COVER_LIMIT)) &&
+    (client.photoLimit != null || client.albumLimit != null);
+
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  // Sends the latest selection. Never runs two saves at once, so an older
+  // state can't overwrite a newer one; changes made mid-save trigger another pass.
+  const flush = useCallback((): Promise<void> => {
+    clearTimer();
+    if (inFlightRef.current) return inFlightRef.current;
+    if (!dirtyRef.current) return Promise.resolve();
+
+    const run = (async () => {
+      setSaveStatus("saving");
+      try {
+        while (dirtyRef.current) {
+          dirtyRef.current = false;
+          const { digitalPhotos, albumPhotos, coverPhotos } = latestRef.current;
+          try {
+            await saveSelections(
+              client.slug,
+              Array.from(digitalPhotos),
+              Array.from(albumPhotos),
+              Array.from(coverPhotos),
+            );
+          } catch {
+            dirtyRef.current = true;
+            setSaveStatus("error");
+            timerRef.current = setTimeout(() => void flush(), RETRY_DELAY);
+            return;
+          }
+        }
+        setSaveStatus("saved");
+      } finally {
+        inFlightRef.current = null;
+      }
+    })();
+    inFlightRef.current = run;
+    return run;
+  }, [client.slug]);
+
+  // Debounced autosave whenever the selection changes
   useEffect(() => {
-    setSavedOk(false);
-  }, [digitalPhotos, albumPhotos, coverPhotos]);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    dirtyRef.current = true;
+    setFinalizeError(false);
+    if (!isComplete) setIsFinalized(false);
+    clearTimer();
+    timerRef.current = setTimeout(() => void flush(), AUTOSAVE_DELAY);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [digitalPhotos, albumPhotos, coverPhotos, flush]);
+
+  // Flush pending changes when the tab is hidden or closed
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === "hidden") void flush();
+    };
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", onHide);
+      clearTimer();
+    };
+  }, [flush]);
 
   const handleModeChange = useCallback((mode: SelectionMode) => {
     setCurrentMode(mode);
@@ -164,19 +255,22 @@ export default function SelectionPage({
     return null;
   };
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    setSavedOk(false);
+  const handleFinalize = async () => {
+    setIsFinalizing(true);
+    setFinalizeError(false);
     try {
-      await saveSelections(
+      await flush();
+      await finalizeSelections(
         client.slug,
         Array.from(digitalPhotos),
         Array.from(albumPhotos),
         Array.from(coverPhotos),
       );
-      setSavedOk(true);
+      setIsFinalized(true);
+    } catch {
+      setFinalizeError(true);
     } finally {
-      setIsSaving(false);
+      setIsFinalizing(false);
     }
   };
 
@@ -329,12 +423,15 @@ export default function SelectionPage({
         </>
       )}
 
-      {/* Save Button */}
+      {/* Autosave status + finalize button */}
       <SelectionButton
         selectedCount={albumOnly ? albumPhotos.size : digitalPhotos.size}
-        onSave={handleSave}
-        isSaving={isSaving}
-        savedOk={savedOk}
+        saveStatus={saveStatus}
+        canFinalize={isComplete}
+        isFinalizing={isFinalizing}
+        isFinalized={isFinalized}
+        finalizeError={finalizeError}
+        onFinalize={handleFinalize}
       />
 
       {/* Image Preview Modal */}
