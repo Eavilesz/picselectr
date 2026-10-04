@@ -53,10 +53,12 @@ export async function uploadToR2(
       ContentType: contentType,
     }),
   );
+  usageCache = null;
 }
 
 export async function deleteR2Object(key: string): Promise<void> {
   await r2.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
+  usageCache = null;
 }
 
 export async function deleteEventPhotos(slug: string): Promise<void> {
@@ -86,7 +88,28 @@ export interface BucketUsage {
   objectCount: number;
 }
 
+// Listing the whole bucket takes many sequential requests (1000 objects each),
+// so the result is cached in memory and shared between concurrent callers.
+const USAGE_TTL_MS = 10 * 60 * 1000;
+let usageCache: { value: BucketUsage; at: number } | null = null;
+let usageInFlight: Promise<BucketUsage> | null = null;
+
 export async function getBucketUsage(): Promise<BucketUsage> {
+  if (usageCache && Date.now() - usageCache.at < USAGE_TTL_MS) {
+    return usageCache.value;
+  }
+  usageInFlight ??= scanBucketUsage()
+    .then((value) => {
+      usageCache = { value, at: Date.now() };
+      return value;
+    })
+    .finally(() => {
+      usageInFlight = null;
+    });
+  return usageInFlight;
+}
+
+async function scanBucketUsage(): Promise<BucketUsage> {
   let bytes = 0;
   let objectCount = 0;
   let continuationToken: string | undefined;
