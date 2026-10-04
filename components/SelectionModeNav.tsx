@@ -43,7 +43,7 @@ export default function SelectionModeNav({
     : allModes;
 
   return (
-    <div className="border-b border-white/10">
+    <div className="sticky top-0 z-30 bg-black/90 backdrop-blur border-b border-white/10">
       <div className="flex">
         {modes.map((mode) => {
           const isActive = currentMode === mode.id;

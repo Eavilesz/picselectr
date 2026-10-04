@@ -47,10 +47,12 @@ export default function SelectionButton({
         <div className="max-w-sm mx-auto">
           <p
             aria-live="polite"
-            className={`h-4 mb-2 text-center text-[10px] tracking-[0.25em] uppercase ${
+            className={`h-5 mb-2 text-center text-[11px] tracking-[0.25em] uppercase ${
               finalizeError || saveStatus === "error"
                 ? "text-amber-500/80"
-                : "text-white/40"
+                : saveStatus === "saving"
+                  ? "text-white font-medium animate-pulse"
+                  : "text-white/40"
             }`}
           >
             {status}
