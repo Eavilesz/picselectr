@@ -66,7 +66,7 @@ export default async function AdminPage() {
         ))}
       </div>
 
-      {/* Storage usage — streams in so the page doesn't wait on the R2 scan */}
+      {/* Storage usage — streams in so the page doesn't wait on it */}
       <Suspense fallback={<StorageUsageSkeleton />}>
         <StorageUsage />
       </Suspense>

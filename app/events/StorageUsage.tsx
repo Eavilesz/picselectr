@@ -1,11 +1,11 @@
-import { getBucketUsage } from "@/lib/r2";
+import { getStorageBytes } from "@/lib/r2";
 
 export function StorageUsageSkeleton() {
   return <StorageCard label="Calculando…" pulse />;
 }
 
 export default async function StorageUsage() {
-  const { bytes } = await getBucketUsage().catch(() => ({ bytes: 0 }));
+  const bytes = await getStorageBytes().catch(() => 0);
 
   const usedGB = bytes / 1024 ** 3;
 

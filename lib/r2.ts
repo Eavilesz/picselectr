@@ -53,12 +53,10 @@ export async function uploadToR2(
       ContentType: contentType,
     }),
   );
-  usageCache = null;
 }
 
 export async function deleteR2Object(key: string): Promise<void> {
   await r2.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
-  usageCache = null;
 }
 
 export async function deleteEventPhotos(slug: string): Promise<void> {
@@ -81,58 +79,6 @@ export async function deleteEventPhotos(slug: string): Promise<void> {
       ? result.NextContinuationToken
       : undefined;
   } while (continuationToken);
-}
-
-export interface BucketUsage {
-  bytes: number;
-  objectCount: number;
-}
-
-// Listing the whole bucket takes many sequential requests (1000 objects each),
-// so the result is cached in memory and shared between concurrent callers.
-const USAGE_TTL_MS = 10 * 60 * 1000;
-let usageCache: { value: BucketUsage; at: number } | null = null;
-let usageInFlight: Promise<BucketUsage> | null = null;
-
-export async function getBucketUsage(): Promise<BucketUsage> {
-  if (usageCache && Date.now() - usageCache.at < USAGE_TTL_MS) {
-    return usageCache.value;
-  }
-  usageInFlight ??= scanBucketUsage()
-    .then((value) => {
-      usageCache = { value, at: Date.now() };
-      return value;
-    })
-    .finally(() => {
-      usageInFlight = null;
-    });
-  return usageInFlight;
-}
-
-async function scanBucketUsage(): Promise<BucketUsage> {
-  let bytes = 0;
-  let objectCount = 0;
-  let continuationToken: string | undefined;
-
-  do {
-    const result = await r2.send(
-      new ListObjectsV2Command({
-        Bucket: BUCKET,
-        ...(continuationToken ? { ContinuationToken: continuationToken } : {}),
-      }),
-    );
-
-    for (const obj of result.Contents ?? []) {
-      bytes += obj.Size ?? 0;
-      objectCount += 1;
-    }
-
-    continuationToken = result.IsTruncated
-      ? result.NextContinuationToken
-      : undefined;
-  } while (continuationToken);
-
-  return { bytes, objectCount };
 }
 
 // ---------------------------------------------------------------------------
@@ -214,21 +160,20 @@ export async function getPhotosByIds(ids: string[]): Promise<Photo[]> {
 
 export async function getPhotoCountsBySlug(): Promise<Record<string, number>> {
   const supabase = await createClient();
+  const { data, error } = await supabase.rpc("photo_counts");
+  if (error) throw new Error(error.message);
+
   const counts: Record<string, number> = {};
-
-  for (let from = 0; ; from += PAGE_SIZE) {
-    const { data, error } = await supabase
-      .from("photos")
-      .select("event_slug")
-      .order("id", { ascending: true })
-      .range(from, from + PAGE_SIZE - 1);
-
-    if (error || !data) return counts;
-    for (const row of data as { event_slug: string }[]) {
-      counts[row.event_slug] = (counts[row.event_slug] ?? 0) + 1;
-    }
-    if (data.length < PAGE_SIZE) break;
+  for (const row of data as { event_slug: string; photo_count: number }[]) {
+    counts[row.event_slug] = row.photo_count;
   }
-
   return counts;
+}
+
+// Bytes stored in R2 (originals + thumbnails), summed from sizes recorded at upload
+export async function getStorageBytes(): Promise<number> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("storage_usage");
+  if (error) throw new Error(error.message);
+  return Number(data ?? 0);
 }

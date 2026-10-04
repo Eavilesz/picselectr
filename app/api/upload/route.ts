@@ -13,12 +13,10 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createClient();
 
-  // Require authenticated session
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Require authenticated session (JWT verified locally, no Auth server call)
+  const { data: auth } = await supabase.auth.getClaims();
 
-  if (!user) {
+  if (!auth?.claims) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -120,6 +118,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       thumbnail_key: thumbnailKey,
       display_order: order,
       name: originalName,
+      original_size: originalBuffer.length,
+      thumbnail_size: thumbnailBuffer.length,
     })
     .select("id, original_key, thumbnail_key, display_order")
     .single();
