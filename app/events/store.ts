@@ -143,6 +143,8 @@ export async function updateStudioName(studioName: string): Promise<void> {
 
 export async function getSettings(): Promise<{
   studioName: string | null;
+  notificationEmail: string | null;
+  loginEmail: string | null;
 }> {
   const supabase = await createClient();
   const {
@@ -151,16 +153,29 @@ export async function getSettings(): Promise<{
   return {
     studioName:
       (user?.user_metadata?.studio_name as string | undefined) ?? null,
+    notificationEmail:
+      (user?.user_metadata?.notification_email as string | undefined) ?? null,
+    loginEmail: user?.email ?? null,
   };
 }
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function updateSettings(settings: {
   studioName: string;
+  notificationEmail: string;
 }): Promise<void> {
+  const notificationEmail = settings.notificationEmail.trim();
+  if (notificationEmail && !EMAIL_PATTERN.test(notificationEmail)) {
+    throw new Error("Correo electrónico inválido");
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({
     data: {
       studio_name: settings.studioName.trim() || null,
+      // Empty falls back to the login email when notifying
+      notification_email: notificationEmail || null,
     },
   });
   if (error) throw new Error(error.message);
@@ -368,7 +383,10 @@ export async function finalizeSelections(
     const { data: userData } = await supabase.auth.admin.getUserById(
       ev.created_by,
     );
-    const to = userData?.user?.email;
+    const to =
+      (userData?.user?.user_metadata?.notification_email as
+        | string
+        | undefined) || userData?.user?.email;
     if (to) {
       // Fetch photo names for all selected tiers
       const allIds = [...new Set([...digital, ...album, ...cover])];
