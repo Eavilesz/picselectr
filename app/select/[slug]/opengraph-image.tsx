@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getEventBySlug } from "@/app/events/store";
 import { getEventTitleLabel } from "@/app/events/types";
+import { getPhotoCount } from "@/lib/r2";
 
 export const alt = "Selección de fotos";
 export const size = { width: 1200, height: 630 };
@@ -14,7 +15,10 @@ export default async function Image({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const client = await getEventBySlug(slug);
+  const [client, photoCount] = await Promise.all([
+    getEventBySlug(slug),
+    getPhotoCount(slug),
+  ]);
 
   const titleLabel = client ? getEventTitleLabel(client) : "Selección de fotos";
   const name = client?.name ?? "";
@@ -73,11 +77,33 @@ export default async function Image({
         <div
           style={{
             display: "flex",
-            fontSize: 34,
+            alignItems: "baseline",
+            justifyContent: "space-between",
             color: "rgba(255,255,255,0.8)",
           }}
         >
-          Elige tus fotos favoritas →
+          <div style={{ display: "flex", fontSize: 34 }}>
+            Elige tus fotos favoritas →
+          </div>
+          {photoCount > 0 && (
+            <div style={{ display: "flex", alignItems: "baseline" }}>
+              <div style={{ display: "flex", fontSize: 64, color: "#ffffff" }}>
+                {photoCount}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  fontSize: 26,
+                  letterSpacing: 6,
+                  textTransform: "uppercase",
+                  marginLeft: 16,
+                  color: "rgba(255,255,255,0.6)",
+                }}
+              >
+                {photoCount === 1 ? "foto" : "fotos"}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     ),

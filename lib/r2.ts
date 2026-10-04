@@ -183,6 +183,16 @@ export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
   return rows.map(toPhoto);
 }
 
+export async function getPhotoCount(slug: string): Promise<number> {
+  const supabase = await createClient();
+  const { count, error } = await supabase
+    .from("photos")
+    .select("id", { count: "exact", head: true })
+    .eq("event_slug", slug);
+
+  return error ? 0 : (count ?? 0);
+}
+
 export async function getPhotosByIds(ids: string[]): Promise<Photo[]> {
   if (ids.length === 0) return [];
   const supabase = await createClient();
