@@ -106,6 +106,23 @@ export async function getEventBySlug(slug: string): Promise<Client | null> {
   return client;
 }
 
+// True when the signed-in admin owns this event (lets them skip the client PIN)
+export async function isEventOwner(slug: string): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data } = await createServiceClient()
+    .from("events")
+    .select("created_by")
+    .eq("slug", slug)
+    .single();
+
+  return (data as { created_by: string | null } | null)?.created_by === user.id;
+}
+
 // Returns the studio_name of the currently authenticated user
 export async function getStudioName(): Promise<string | null> {
   const supabase = await createClient();

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getEventBySlug, getSelections } from "@/app/events/store";
+import { getEventBySlug, getSelections, isEventOwner } from "@/app/events/store";
 import { getPhotosBySlug } from "@/lib/r2";
 import SelectionPage from "./SelectionPage";
 import PinGate from "@/components/PinGate";
@@ -25,20 +25,24 @@ export default async function SelectPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [client, photos, savedSelections] = await Promise.all([
+  const [client, photos, savedSelections, isOwner] = await Promise.all([
     getEventBySlug(slug),
     getPhotosBySlug(slug),
     getSelections(slug),
+    isEventOwner(slug),
   ]);
   if (!client) notFound();
 
-  return (
-    <PinGate slug={slug}>
-      <SelectionPage
-        client={client}
-        photos={photos}
-        savedSelections={savedSelections}
-      />
-    </PinGate>
+  const selectionPage = (
+    <SelectionPage
+      client={client}
+      photos={photos}
+      savedSelections={savedSelections}
+    />
   );
+
+  // The signed-in owner skips the client PIN
+  if (isOwner) return selectionPage;
+
+  return <PinGate slug={slug}>{selectionPage}</PinGate>;
 }
