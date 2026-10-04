@@ -170,7 +170,8 @@ export async function getPhotoCountsBySlug(): Promise<Record<string, number>> {
   return counts;
 }
 
-// Bytes stored in R2 (originals + thumbnails), summed from sizes recorded at upload
+// Bytes stored in the whole R2 bucket (all studios, originals + thumbnails),
+// summed from sizes recorded at upload
 export async function getStorageBytes(): Promise<number> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("storage_usage");
