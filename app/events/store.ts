@@ -372,12 +372,16 @@ export async function finalizeSelections(
     if (to) {
       // Fetch photo names for all selected tiers
       const allIds = [...new Set([...digital, ...album, ...cover])];
-      const { data: photoRows } = await supabase
-        .from("photos")
-        .select("id, name")
-        .in("id", allIds);
+      const photoRows: { id: string; name: string | null }[] = [];
+      for (let i = 0; i < allIds.length; i += 100) {
+        const { data } = await supabase
+          .from("photos")
+          .select("id, name")
+          .in("id", allIds.slice(i, i + 100));
+        photoRows.push(...((data ?? []) as typeof photoRows));
+      }
       const photoNames = new Map<string, string>(
-        (photoRows ?? []).map((r: { id: string; name: string | null }) => [
+        photoRows.map((r) => [
           r.id,
           r.name ?? r.id.slice(0, 8),
         ]),

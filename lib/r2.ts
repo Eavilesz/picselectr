@@ -147,57 +147,78 @@ interface PhotoRow {
   name: string | null;
 }
 
-export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
-  const supabase = await createClient();
+// Supabase returns at most 1000 rows per request, so larger sets are read in pages
+const PAGE_SIZE = 1000;
+// Keeps `.in()` filters well under URL length limits
+const ID_CHUNK = 100;
 
-  const { data, error } = await supabase
-    .from("photos")
-    .select("id, original_key, thumbnail_key, display_order, name")
-    .eq("event_slug", slug)
-    .order("display_order", { ascending: true });
-
-  if (error || !data) return [];
-
-  return (data as PhotoRow[]).map((row, i) => ({
+function toPhoto(row: PhotoRow, i: number): Photo {
+  return {
     id: row.id,
     originalUrl: `${PUBLIC_URL}/${row.original_key}`,
     thumbnailUrl: `${PUBLIC_URL}/${row.thumbnail_key}`,
     alt: `Foto ${i + 1}`,
     name: row.name ?? null,
-  }));
+  };
+}
+
+export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
+  const supabase = await createClient();
+  const rows: PhotoRow[] = [];
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("photos")
+      .select("id, original_key, thumbnail_key, display_order, name")
+      .eq("event_slug", slug)
+      .order("display_order", { ascending: true })
+      .order("id", { ascending: true }) // tie-breaker keeps pages stable
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error || !data) return [];
+    rows.push(...(data as PhotoRow[]));
+    if (data.length < PAGE_SIZE) break;
+  }
+
+  return rows.map(toPhoto);
 }
 
 export async function getPhotosByIds(ids: string[]): Promise<Photo[]> {
   if (ids.length === 0) return [];
   const supabase = await createClient();
+  const rows: PhotoRow[] = [];
 
-  const { data, error } = await supabase
-    .from("photos")
-    .select("id, original_key, thumbnail_key, display_order, name")
-    .in("id", ids)
-    .order("display_order", { ascending: true });
+  for (let i = 0; i < ids.length; i += ID_CHUNK) {
+    const { data, error } = await supabase
+      .from("photos")
+      .select("id, original_key, thumbnail_key, display_order, name")
+      .in("id", ids.slice(i, i + ID_CHUNK));
 
-  if (error || !data) return [];
+    if (error || !data) return [];
+    rows.push(...(data as PhotoRow[]));
+  }
 
-  return (data as PhotoRow[]).map((row, i) => ({
-    id: row.id,
-    originalUrl: `${PUBLIC_URL}/${row.original_key}`,
-    thumbnailUrl: `${PUBLIC_URL}/${row.thumbnail_key}`,
-    alt: `Foto ${i + 1}`,
-    name: row.name ?? null,
-  }));
+  rows.sort((a, b) => a.display_order - b.display_order);
+  return rows.map(toPhoto);
 }
 
 export async function getPhotoCountsBySlug(): Promise<Record<string, number>> {
   const supabase = await createClient();
-
-  const { data, error } = await supabase.from("photos").select("event_slug");
-
-  if (error || !data) return {};
-
   const counts: Record<string, number> = {};
-  for (const row of data as { event_slug: string }[]) {
-    counts[row.event_slug] = (counts[row.event_slug] ?? 0) + 1;
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("photos")
+      .select("event_slug")
+      .order("id", { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error || !data) return counts;
+    for (const row of data as { event_slug: string }[]) {
+      counts[row.event_slug] = (counts[row.event_slug] ?? 0) + 1;
+    }
+    if (data.length < PAGE_SIZE) break;
   }
+
   return counts;
 }
