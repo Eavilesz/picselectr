@@ -474,7 +474,7 @@ async function sendEmailNotification(
 
   // Fire-and-forget — notification failure must never break the client save
   try {
-    await fetch("https://api.resend.com/emails", {
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -487,7 +487,13 @@ async function sendEmailNotification(
         text: `${clientName} ha completado su selección de fotos. Entra a Picselectr para verla.${photoList}`,
       }),
     });
-  } catch {
-    // Silently ignore network errors
+    if (!res.ok) {
+      console.error(
+        `Resend rejected the notification email (${res.status}):`,
+        await res.text(),
+      );
+    }
+  } catch (err) {
+    console.error("Could not reach Resend:", err);
   }
 }
