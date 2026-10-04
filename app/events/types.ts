@@ -27,3 +27,20 @@ export const EVENT_LABELS: Record<EventType, string> = {
   quinceañera: "Quinceañera",
   other: "Otro",
 };
+
+const EVENT_TITLE_LABELS: Record<EventType, string> = {
+  wedding: "La Boda de",
+  quinceañera: "La Quinceañera de",
+  birthday: "El Cumpleaños de",
+  photobooth: "La Sesión de",
+  other: "El Evento de",
+};
+
+// "La Boda de", "El Cumpleaños de", or the custom label for "other" events
+export function getEventTitleLabel(
+  client: Pick<Client, "eventType" | "customEventLabel">,
+): string {
+  return client.eventType === "other" && client.customEventLabel
+    ? client.customEventLabel + " de"
+    : EVENT_TITLE_LABELS[client.eventType];
+}

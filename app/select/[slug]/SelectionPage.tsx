@@ -5,21 +5,13 @@ import PhotoGallery from "@/components/PhotoGallery";
 import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
-import { Client, EventType } from "@/app/events/types";
+import { Client, getEventTitleLabel } from "@/app/events/types";
 import { Photo } from "@/lib/r2";
 import {
   saveSelections,
   finalizeSelections,
   Selections,
 } from "@/app/events/store";
-
-const EVENT_TITLE_LABELS: Record<EventType, string> = {
-  wedding: "La Boda de",
-  quinceañera: "La Quinceañera de",
-  birthday: "El Cumpleaños de",
-  photobooth: "La Sesión de",
-  other: "El Evento de",
-};
 
 const COVER_LIMIT = 2;
 const INITIAL_BATCH = 60;
@@ -292,10 +284,7 @@ export default function SelectionPage({
 
   const availablePhotos = getAvailablePhotos();
   const visiblePhotos = availablePhotos.slice(0, visibleCount);
-  const titleLabel =
-    client.eventType === "other" && client.customEventLabel
-      ? client.customEventLabel + " de"
-      : EVENT_TITLE_LABELS[client.eventType];
+  const titleLabel = getEventTitleLabel(client);
 
   const daysLeft = (() => {
     if (!client.deadline) return null;

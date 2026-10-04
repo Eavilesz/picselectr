@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getEventBySlug, getSelections, isEventOwner } from "@/app/events/store";
+import { getEventTitleLabel } from "@/app/events/types";
 import { getPhotosBySlug } from "@/lib/r2";
 import SelectionPage from "./SelectionPage";
 import PinGate from "@/components/PinGate";
@@ -13,9 +14,15 @@ export async function generateMetadata({
   const { slug } = await params;
   const client = await getEventBySlug(slug);
   if (!client) return {};
+  const title = `${getEventTitleLabel(client)} ${client.name}`;
+  const description = client.studioName
+    ? `${client.studioName} · Elige tus fotos favoritas de la galería`
+    : "Elige tus fotos favoritas de la galería";
   return {
-    title: `${client.name} — Selección de Fotos`,
-    description: `Selecciona tus fotos favoritas`,
+    title: `${title} — Selección de Fotos`,
+    description,
+    // The OG image comes from opengraph-image.tsx in this folder
+    openGraph: { title, description, type: "website", locale: "es_MX" },
   };
 }
 

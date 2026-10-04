@@ -12,7 +12,13 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
+// Absolute base for og:image URLs — link previews (WhatsApp) need full URLs
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Picselectr — Selección de Fotos",
   description: "Selecciona tus fotos favoritas",
 };
