@@ -4,7 +4,6 @@ export type SelectionMode = "digital" | "album" | "cover";
 
 interface PhotoCardProps {
   photo: Photo;
-  index: number;
   isSelected: boolean;
   selectionType?: "digital" | "album" | "cover" | null;
   currentMode: SelectionMode;
@@ -14,7 +13,6 @@ interface PhotoCardProps {
 
 export default function PhotoCard({
   photo,
-  index,
   isSelected,
   selectionType,
   currentMode,
@@ -72,11 +70,6 @@ export default function PhotoCard({
 
       {/* Gradient vignette for heart legibility */}
       <div className="absolute top-0 left-0 w-14 h-14 bg-linear-to-br from-black/50 to-transparent pointer-events-none z-10" />
-
-      {/* Photo number */}
-      <span className="absolute bottom-1 right-1.5 z-10 text-[10px] md:text-xs font-medium tabular-nums text-white/80 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] pointer-events-none select-none">
-        {index}
-      </span>
 
       {/* Heart Icon - Separate clickable area */}
       <button
