@@ -166,6 +166,11 @@ export default function ImagePreview({
             draggable={false}
             onClick={(e) => e.stopPropagation()}
           />
+          {photo.name && (
+            <span className="text-xl tracking-[0.15em] text-white/60 uppercase shrink-0">
+              {photo.name}
+            </span>
+          )}
         </div>
 
         {/* Next arrow */}
