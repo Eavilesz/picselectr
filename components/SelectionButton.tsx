@@ -45,18 +45,41 @@ export default function SelectionButton({
     <div className="fixed bottom-0 left-0 right-0 z-40">
       <div className="bg-gradient-to-t from-black via-black/95 to-transparent pt-10 pb-8 px-6">
         <div className="max-w-sm mx-auto">
-          <p
+          <div
             aria-live="polite"
-            className={`h-5 mb-2 text-center text-[11px] tracking-[0.25em] uppercase ${
+            className={`h-7 mb-2 flex items-center justify-center text-[11px] tracking-[0.25em] uppercase ${
               finalizeError || saveStatus === "error"
                 ? "text-amber-500/80"
-                : saveStatus === "saving"
-                  ? "text-white font-medium animate-pulse"
-                  : "text-white/40"
+                : "text-white/40"
             }`}
           >
-            {status}
-          </p>
+            {!finalizeError && saveStatus === "saving" ? (
+              <span className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1 text-black font-semibold shadow-[0_0_20px_rgba(255,255,255,0.35)]">
+                <svg
+                  className="w-3 h-3 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  />
+                </svg>
+                {status}
+              </span>
+            ) : (
+              status
+            )}
+          </div>
           <button
             onClick={onFinalize}
             disabled={disabled}
