@@ -30,21 +30,38 @@ export default async function AdminPage() {
             </p>
           )}
         </div>
-        <Link
-          href="/events/new"
-          className="inline-flex items-center gap-2 bg-neutral-700 text-neutral-200 text-xs tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-neutral-600 transition-colors"
-        >
-          <svg
-            className="w-3.5 h-3.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
+        <div className="flex items-center gap-3">
+          <Link
+            href="/events/galleries/new"
+            className="inline-flex items-center gap-2 border border-white/20 text-neutral-300 text-xs tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-white/5 transition-colors"
           >
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-          Nuevo evento
-        </Link>
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Nueva galería
+          </Link>
+          <Link
+            href="/events/new"
+            className="inline-flex items-center gap-2 bg-neutral-700 text-neutral-200 text-xs tracking-[0.15em] uppercase px-4 py-2.5 hover:bg-neutral-600 transition-colors"
+          >
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Nuevo evento
+          </Link>
+        </div>
       </div>
 
       {/* Summary stats */}

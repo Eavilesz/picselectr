@@ -28,6 +28,12 @@ export default function AdminLayout({
             Eventos
           </Link>
           <Link
+            href="/events/galleries"
+            className="text-xs tracking-[0.15em] uppercase text-neutral-400 hover:text-white transition-colors"
+          >
+            Galerías
+          </Link>
+          <Link
             href="/events/settings"
             className="text-xs tracking-[0.15em] uppercase text-neutral-400 hover:text-white transition-colors"
           >

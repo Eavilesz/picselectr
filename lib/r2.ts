@@ -1,28 +1,12 @@
 "use server";
 
 import {
-  S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import { createClient } from "@/lib/supabase/server";
-
-// ---------------------------------------------------------------------------
-// R2 client
-// ---------------------------------------------------------------------------
-
-const r2 = new S3Client({
-  region: "auto",
-  endpoint: process.env.CLOUDFLARE_R2_ENDPOINT!,
-  credentials: {
-    accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
-  },
-});
-
-const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME!;
-const PUBLIC_URL = process.env.R2_PUBLIC_URL!;
+import { r2, BUCKET, PUBLIC_URL } from "@/lib/r2-client";
 
 // ---------------------------------------------------------------------------
 // Types
