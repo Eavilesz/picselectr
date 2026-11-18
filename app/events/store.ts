@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { Client } from "./types";
 import { deleteEventPhotos } from "@/lib/r2";
+import { grantEventAccess } from "@/lib/event-access";
 
 // ---------------------------------------------------------------------------
 // Row types (as stored in Supabase)
@@ -197,8 +198,11 @@ export async function verifyEventPin(
 
   if (error || !data) return false;
   const storedPin = (data as { pin: string | null }).pin;
-  if (!storedPin) return false;
-  return storedPin === inputPin;
+  if (!storedPin || storedPin !== inputPin) return false;
+
+  // Lets server endpoints (semantic search) verify the client got past the PIN
+  await grantEventAccess(slug, storedPin);
+  return true;
 }
 
 export async function updateStoredProduct(
