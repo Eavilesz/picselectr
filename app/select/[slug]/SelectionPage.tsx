@@ -5,6 +5,7 @@ import PhotoGallery from "@/components/PhotoGallery";
 import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
+import PhotoSearch from "@/components/PhotoSearch";
 import { Client, getEventTitleLabel } from "@/app/events/types";
 import { Photo } from "@/lib/r2";
 import {
@@ -53,6 +54,11 @@ export default function SelectionPage({
   const [isFinalized, setIsFinalized] = useState(client.isReady);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [finalizeError, setFinalizeError] = useState(false);
+  // Active semantic search: matching photo ids, best match first
+  const [search, setSearch] = useState<{
+    query: string;
+    ids: string[];
+  } | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Autosave bookkeeping (refs so the debounced flush always sees fresh data)
@@ -282,7 +288,21 @@ export default function SelectionPage({
     }
   };
 
-  const availablePhotos = getAvailablePhotos();
+  // A search narrows the current mode's photos to the matches, in relevance
+  // order. Selection, preview and prev/next all work off this same list.
+  const availablePhotos = (() => {
+    const modePhotos = getAvailablePhotos();
+    if (!search) return modePhotos;
+    const rank = new Map(search.ids.map((id, i) => [id, i]));
+    return modePhotos
+      .filter((p) => rank.has(p.id))
+      .sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
+  })();
+
+  const handleSearchResults = (query: string | null, ids: string[] | null) => {
+    setSearch(query && ids ? { query, ids } : null);
+    setVisibleCount(INITIAL_BATCH);
+  };
   const visiblePhotos = availablePhotos.slice(0, visibleCount);
   const titleLabel = getEventTitleLabel(client);
 
@@ -389,12 +409,25 @@ export default function SelectionPage({
         </p>
       </div>
 
+      {client.semanticSearchEnabled && (
+        <PhotoSearch
+          slug={client.slug}
+          activeQuery={search?.query ?? null}
+          onResults={handleSearchResults}
+        />
+      )}
+
       {/* Photo Grid */}
       {availablePhotos.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-6 py-24 text-center">
           <p className="text-white/30 text-sm tracking-widest uppercase">
-            Sin fotos
+            {search ? "Sin resultados" : "Sin fotos"}
           </p>
+          {search && (
+            <p className="mt-3 text-xs text-white/30">
+              Prueba describiendo la foto de otra forma.
+            </p>
+          )}
         </div>
       ) : (
         <>

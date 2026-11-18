@@ -7,6 +7,18 @@ const SESSION_KEY = (slug: string) => `pin_verified_${slug}`;
 const PIN_EVENT = "picselectr:pin-verified";
 const MAX_ATTEMPTS = 5;
 
+// Shows the PIN form again. Used when the server no longer recognizes the
+// visitor (no/expired access cookie, e.g. PIN entered before the cookie
+// existed) even though this browser remembers the PIN as verified.
+export function resetPinVerification(slug: string) {
+  try {
+    localStorage.removeItem(SESSION_KEY(slug));
+  } catch {
+    // storage unavailable: the gate will simply stay as it is
+  }
+  window.dispatchEvent(new Event(PIN_EVENT));
+}
+
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener(PIN_EVENT, callback);
