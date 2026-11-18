@@ -6,6 +6,7 @@ import {
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { r2, BUCKET, PUBLIC_URL } from "@/lib/r2-client";
 
 // ---------------------------------------------------------------------------
@@ -92,8 +93,10 @@ function toPhoto(row: PhotoRow, i: number): Photo {
   };
 }
 
+// Public read for the /select page (anonymous clients): photos RLS is
+// owner-only, so this goes through the service role, scoped to one event.
 export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const rows: PhotoRow[] = [];
 
   for (let from = 0; ; from += PAGE_SIZE) {
@@ -113,8 +116,9 @@ export async function getPhotosBySlug(slug: string): Promise<Photo[]> {
   return rows.map(toPhoto);
 }
 
+// Public read for the /select OG image (link-preview bots have no session)
 export async function getPhotoCount(slug: string): Promise<number> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { count, error } = await supabase
     .from("photos")
     .select("id", { count: "exact", head: true })
