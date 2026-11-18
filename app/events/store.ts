@@ -232,14 +232,28 @@ export async function updateStoredProduct(
   if (error) throw new Error(error.message);
 }
 
+// Server actions are callable by anyone, so ownership is proven by the RLS
+// delete itself: only the owner gets a deleted row back. R2 files are removed
+// only after that, never for someone else's (or a missing) event. A dangling
+// R2 object is harmless; deleted files for a live event are not.
 export async function deleteStoredProduct(slug: string): Promise<void> {
   const supabase = await createClient();
 
-  await deleteEventPhotos(slug);
-
-  // photos rows cascade-delete via FK
-  const { error } = await supabase.from("events").delete().eq("slug", slug);
+  // photos/selections/embeddings rows cascade-delete via FK
+  const { data, error } = await supabase
+    .from("events")
+    .delete()
+    .eq("slug", slug)
+    .select("slug");
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) throw new Error("Evento no encontrado");
+
+  try {
+    await deleteEventPhotos(slug);
+  } catch (err) {
+    // The event is already gone; don't fail the request over leftover files
+    console.error(`Could not delete R2 files for event ${slug}:`, err);
+  }
 }
 
 // ---------------------------------------------------------------------------
