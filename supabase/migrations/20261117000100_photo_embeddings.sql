@@ -32,10 +32,9 @@ create table public.photo_embeddings (
 create index photo_embeddings_event_model_idx
   on public.photo_embeddings (event_slug, model);
 
--- ANN index. Searches are always scoped to one event, which is usually small
--- enough that the planner uses the btree above and scans exactly;
--- search_photos() enables iterative scans so HNSW can't under-return when
--- it is chosen.
+-- ANN index for future cross-event use. search_photos() deliberately does an
+-- exact scan within one event (via the btree above) instead, since a
+-- filtered HNSW scan can under-return.
 create index photo_embeddings_embedding_hnsw_idx
   on public.photo_embeddings
   using hnsw (embedding extensions.vector_cosine_ops);
