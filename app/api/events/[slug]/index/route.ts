@@ -6,7 +6,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { r2, BUCKET } from "@/lib/r2-client";
 import {
   EMBEDDING_MODEL_TAG,
-  EmbeddingRateLimitError,
+  EmbeddingBusyError,
   embedImages,
   logAiUsage,
 } from "@/lib/embeddings";
@@ -25,10 +25,14 @@ export const dynamic = "force-dynamic";
 
 const BATCH_SIZE = 50; // photos per call
 // Images per OpenRouter request. The upstream quota counts requests per
-// minute, so bigger requests go further (25 measured at ~1.2s; 50 at ~11s).
+// minute, so bigger requests go further (25 realistic 768px photos answer
+// in ~2s when the provider isn't saturated).
 const CHUNK_SIZE = 25;
 const PREP_CONCURRENCY = 4; // originals decoded at once (memory)
-const TIME_BUDGET_MS = 45_000; // leaves headroom for the last chunk
+const TIME_BUDGET_MS = 45_000; // no new chunk starts after this
+// Hard stop for any in-flight embedding request (incl. retry), so the
+// function always answers before Vercel kills it at maxDuration
+const DEADLINE_MS = 55_000;
 const AI_IMAGE_SIZE = 768; // long edge sent to the model
 const PAGE_SIZE = 1000;
 
@@ -196,15 +200,18 @@ export async function POST(
 
     let embeddings: number[][];
     try {
-      const result = await embedImages(ready.map((r) => r.image));
+      const result = await embedImages(
+        ready.map((r) => r.image),
+        startedAt + DEADLINE_MS,
+      );
       embeddings = result.embeddings;
       await logAiUsage(slug, "index", result.usage);
     } catch (err) {
-      // Stop here; the next call resumes. "rate_limited" tells the client
-      // to wait for the per-minute quota to reset before calling again.
-      if (err instanceof EmbeddingRateLimitError) {
-        console.warn("Index: rate limited", err.message);
-        stopReason = "rate_limited";
+      // Stop here; the next call resumes. "provider_busy" (rate limited or
+      // timed out) tells the client to wait a bit before calling again.
+      if (err instanceof EmbeddingBusyError) {
+        console.warn("Index: provider busy", err.message);
+        stopReason = "provider_busy";
       } else {
         console.error("Index: embedding failed", err);
         stopReason = "embedding_error";

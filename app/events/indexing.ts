@@ -4,7 +4,7 @@
 // with the same function.
 //
 // The embedding provider has a per-minute request quota. When a call reports
-// "rate_limited", this waits here in the browser (free, no server time) and
+// "provider_busy", this waits here in the browser (free, no server time) and
 // carries on, giving up only after several minutes without progress.
 
 const MAX_CALLS = 500; // hard stop; 1,500 photos take ~30 calls
@@ -54,7 +54,7 @@ export async function indexEventPhotos(
     onProgress(done, total, false);
     if (body.remaining === 0) return { done, total, error: null };
 
-    if (body.stopReason === "rate_limited") {
+    if (body.stopReason === "provider_busy") {
       idleWaits = body.indexed > 0 ? 0 : idleWaits + 1;
       if (idleWaits > MAX_RATE_LIMIT_WAITS) {
         return {

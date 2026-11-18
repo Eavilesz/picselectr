@@ -36,13 +36,21 @@ interface OpenRouterResponse {
 
 type InputType = "search_document" | "search_query";
 
-// The upstream per-minute request quota was hit. Callers that can wait
-// (the indexing loop in the browser) should back off and retry.
-export class EmbeddingRateLimitError extends Error {}
+// The provider is saturated: it hit its per-minute request quota (429) or
+// held the request until it timed out. Both clear up on their own, so
+// callers that can wait (the indexing loop in the browser) should back off
+// and retry rather than treat it as a failure.
+export class EmbeddingBusyError extends Error {}
 
+const RETRY_DELAY_MS = 3000;
+const MIN_ATTEMPT_MS = 5000; // don't start an attempt with less time than this
+
+// `deadline` (epoch ms) bounds the whole call, retries included, so it can't
+// outlive the serverless function that is waiting on it.
 async function requestEmbeddings(
   input: unknown[],
   inputType: InputType,
+  deadline = Date.now() + REQUEST_TIMEOUT_MS,
 ): Promise<{ embeddings: number[][]; usage: EmbeddingUsage }> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("Missing OPENROUTER_API_KEY");
@@ -58,28 +66,46 @@ async function requestEmbeddings(
     provider: { data_collection: "deny" },
   });
 
-  // One short retry for rate limits / transient upstream errors. Longer
-  // waits belong to the caller: a server function can't sleep through a
-  // per-minute quota within Vercel's time limit.
+  // One short retry for rate limits / transient upstream errors, if time
+  // allows. Longer waits belong to the caller: a server function can't sleep
+  // through a per-minute quota within Vercel's time limit.
   for (let attempt = 0; ; attempt++) {
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body,
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-    });
+    const timeLeft = deadline - Date.now();
+    if (timeLeft < MIN_ATTEMPT_MS) {
+      throw new EmbeddingBusyError("No time left for another attempt");
+    }
 
-    if ((res.status === 429 || res.status >= 500) && attempt === 0) {
-      await new Promise((r) => setTimeout(r, 3000));
+    let res: Response;
+    try {
+      res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body,
+        signal: AbortSignal.timeout(Math.min(REQUEST_TIMEOUT_MS, timeLeft)),
+      });
+    } catch (err) {
+      // Normal requests answer in ~2s; a timeout means the provider is
+      // queueing us, the same situation as a 429
+      if (err instanceof Error && err.name === "TimeoutError") {
+        throw new EmbeddingBusyError("OpenRouter request timed out");
+      }
+      throw err;
+    }
+
+    const canRetry =
+      attempt === 0 &&
+      deadline - Date.now() > RETRY_DELAY_MS + MIN_ATTEMPT_MS;
+    if ((res.status === 429 || res.status >= 500) && canRetry) {
+      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS));
       continue;
     }
 
     const json = (await res.json().catch(() => ({}))) as OpenRouterResponse;
     if (res.status === 429) {
-      throw new EmbeddingRateLimitError(
+      throw new EmbeddingBusyError(
         `OpenRouter rate limited: ${json.error?.message ?? "429"}`,
       );
     }
@@ -109,8 +135,9 @@ async function requestEmbeddings(
   }
 }
 
-// JPEG buffers (already downscaled) -> one embedding each, same order
-export function embedImages(images: Buffer[]) {
+// JPEG buffers (already downscaled) -> one embedding each, same order.
+// `deadline` (epoch ms) caps the call, retries included.
+export function embedImages(images: Buffer[], deadline?: number) {
   return requestEmbeddings(
     images.map((buf) => ({
       content: [
@@ -121,13 +148,19 @@ export function embedImages(images: Buffer[]) {
       ],
     })),
     "search_document",
+    deadline,
   );
 }
 
 export async function embedQuery(
   text: string,
+  deadline?: number,
 ): Promise<{ embedding: number[]; usage: EmbeddingUsage }> {
-  const { embeddings, usage } = await requestEmbeddings([text], "search_query");
+  const { embeddings, usage } = await requestEmbeddings(
+    [text],
+    "search_query",
+    deadline,
+  );
   return { embedding: embeddings[0], usage };
 }
 
