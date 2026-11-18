@@ -7,7 +7,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 // input_type all match, so these never change without re-indexing.
 // ---------------------------------------------------------------------------
 
-export const EMBEDDING_MODEL = "google/gemini-embedding-2-preview";
+export const EMBEDDING_MODEL = "google/gemini-embedding-2";
 export const EMBEDDING_DIMENSIONS = 768; // must match vector(768) in the DB
 
 // Stored in photo_embeddings.model and passed to search_photos(). Includes the
