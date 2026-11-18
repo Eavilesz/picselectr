@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { EventType, Client } from "../../types";
 import { updateStoredProduct } from "../../store";
+import SemanticSearchToggle from "@/components/SemanticSearchToggle";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
   { value: "wedding", label: "Boda" },
@@ -44,6 +45,9 @@ export default function EditForm({ client }: { client: Client }) {
   );
   const [customEventLabel, setCustomEventLabel] = useState(
     client.customEventLabel ?? "",
+  );
+  const [semanticSearchEnabled, setSemanticSearchEnabled] = useState(
+    client.semanticSearchEnabled ?? false,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -92,6 +96,7 @@ export default function EditForm({ client }: { client: Client }) {
         albumLimit: selectionMode !== "digital" ? Number(albumLimit) : null,
         customEventLabel:
           eventType === "other" ? customEventLabel.trim() : null,
+        semanticSearchEnabled,
       });
     } catch (err) {
       setSubmitting(false);
@@ -276,6 +281,11 @@ export default function EditForm({ client }: { client: Client }) {
           )}
         </div>
       )}
+
+      <SemanticSearchToggle
+        enabled={semanticSearchEnabled}
+        onChange={setSemanticSearchEnabled}
+      />
 
       {/* Form error */}
       {errors.form && <p className="text-xs text-rose-400">{errors.form}</p>}

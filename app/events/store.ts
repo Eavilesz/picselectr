@@ -23,6 +23,7 @@ interface EventRow {
   created_by: string | null;
   studio_name: string | null;
   custom_event_label: string | null;
+  semantic_search_enabled: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,6 +44,7 @@ function toClient(event: EventRow): Client {
     pin: event.pin ?? undefined,
     studioName: event.studio_name ?? null,
     customEventLabel: event.custom_event_label ?? null,
+    semanticSearchEnabled: event.semantic_search_enabled ?? false,
   };
 }
 
@@ -86,6 +88,7 @@ export async function addStoredProduct(product: Client): Promise<void> {
     created_by: user?.id,
     studio_name: studioName,
     custom_event_label: product.customEventLabel ?? null,
+    semantic_search_enabled: product.semanticSearchEnabled ?? false,
   });
 
   if (error) throw new Error(error.message);
@@ -218,6 +221,8 @@ export async function updateStoredProduct(
   if (updates.pin !== undefined) dbUpdates.pin = updates.pin;
   if (updates.customEventLabel !== undefined)
     dbUpdates.custom_event_label = updates.customEventLabel;
+  if (updates.semanticSearchEnabled !== undefined)
+    dbUpdates.semantic_search_enabled = updates.semanticSearchEnabled;
 
   const { error } = await supabase
     .from("events")

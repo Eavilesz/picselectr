@@ -18,6 +18,7 @@ export interface Client {
   pin?: string;
   studioName?: string | null;
   customEventLabel?: string | null;
+  semanticSearchEnabled?: boolean;
 }
 
 export const EVENT_LABELS: Record<EventType, string> = {

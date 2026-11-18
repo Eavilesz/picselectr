@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { EventType } from "../types";
 import { addStoredProduct } from "../store";
+import SemanticSearchToggle from "@/components/SemanticSearchToggle";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
   { value: "wedding", label: "Boda" },
@@ -33,6 +34,7 @@ export default function NewProductPage() {
       : String(Math.floor(1000 + Math.random() * 9000)),
   );
   const [customEventLabel, setCustomEventLabel] = useState("");
+  const [semanticSearchEnabled, setSemanticSearchEnabled] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -128,6 +130,7 @@ export default function NewProductPage() {
         pin,
         customEventLabel:
           eventType === "other" ? customEventLabel.trim() : null,
+        semanticSearchEnabled,
       });
       if (selectedFiles.length > 0) {
         await uploadFilesToR2(slug);
@@ -346,6 +349,11 @@ export default function NewProductPage() {
             )}
           </div>
         )}
+
+        <SemanticSearchToggle
+          enabled={semanticSearchEnabled}
+          onChange={setSemanticSearchEnabled}
+        />
 
         {/* PIN */}
         <div>
