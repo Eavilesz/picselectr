@@ -36,6 +36,10 @@ interface OpenRouterResponse {
 
 type InputType = "search_document" | "search_query";
 
+// The upstream per-minute request quota was hit. Callers that can wait
+// (the indexing loop in the browser) should back off and retry.
+export class EmbeddingRateLimitError extends Error {}
+
 async function requestEmbeddings(
   input: unknown[],
   inputType: InputType,
@@ -54,7 +58,9 @@ async function requestEmbeddings(
     provider: { data_collection: "deny" },
   });
 
-  // One retry for rate limits / transient upstream errors
+  // One short retry for rate limits / transient upstream errors. Longer
+  // waits belong to the caller: a server function can't sleep through a
+  // per-minute quota within Vercel's time limit.
   for (let attempt = 0; ; attempt++) {
     const res = await fetch(ENDPOINT, {
       method: "POST",
@@ -67,11 +73,16 @@ async function requestEmbeddings(
     });
 
     if ((res.status === 429 || res.status >= 500) && attempt === 0) {
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 3000));
       continue;
     }
 
     const json = (await res.json().catch(() => ({}))) as OpenRouterResponse;
+    if (res.status === 429) {
+      throw new EmbeddingRateLimitError(
+        `OpenRouter rate limited: ${json.error?.message ?? "429"}`,
+      );
+    }
     if (!res.ok || !json.data) {
       throw new Error(
         `OpenRouter embeddings failed (${res.status}): ${json.error?.message ?? "no data"}`,
@@ -118,6 +129,17 @@ export async function embedQuery(
 ): Promise<{ embedding: number[]; usage: EmbeddingUsage }> {
   const { embeddings, usage } = await requestEmbeddings([text], "search_query");
   return { embedding: embeddings[0], usage };
+}
+
+// Photos of the event that have an embedding for the current model. Callers
+// must have already authorized access to the event.
+export async function getIndexedCount(eventSlug: string): Promise<number> {
+  const { count, error } = await createServiceClient()
+    .from("photo_embeddings")
+    .select("photo_id", { count: "exact", head: true })
+    .eq("event_slug", eventSlug)
+    .eq("model", EMBEDDING_MODEL_TAG);
+  return error ? 0 : (count ?? 0);
 }
 
 // Cost tracking per event. Never throws: a failed log must not fail the

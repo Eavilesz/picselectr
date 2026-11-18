@@ -5,6 +5,7 @@ import Link from "next/link";
 import { EventType } from "../types";
 import { addStoredProduct } from "../store";
 import SemanticSearchToggle from "@/components/SemanticSearchToggle";
+import { indexEventPhotos } from "../indexing";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
   { value: "wedding", label: "Boda" },
@@ -145,6 +146,19 @@ export default function NewProductPage() {
             : "Error al crear el evento. Intenta de nuevo.",
       });
       return;
+    }
+
+    // The event already exists with its photos, so indexing problems don't
+    // block creation: the event page shows what's left and can resume it.
+    if (semanticSearchEnabled && selectedFiles.length > 0) {
+      await indexEventPhotos(slug, (done, total, waiting) =>
+        setUploadProgress(
+          waiting
+            ? `Esperando límite del servicio (${done} de ${total})...`
+            : `Indexando fotos ${done} de ${total}...`,
+        ),
+      );
+      setUploadProgress(null);
     }
 
     setSubmitting(false);

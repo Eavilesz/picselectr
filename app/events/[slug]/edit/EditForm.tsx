@@ -4,6 +4,7 @@ import { useState } from "react";
 import { EventType, Client } from "../../types";
 import { updateStoredProduct } from "../../store";
 import SemanticSearchToggle from "@/components/SemanticSearchToggle";
+import { indexEventPhotos } from "../../indexing";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
   { value: "wedding", label: "Boda" },
@@ -51,6 +52,7 @@ export default function EditForm({ client }: { client: Client }) {
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [indexProgress, setIndexProgress] = useState<string | null>(null);
 
   const clientName =
     eventType === "wedding"
@@ -107,6 +109,18 @@ export default function EditForm({ client }: { client: Client }) {
             : "Error al guardar. Intenta de nuevo.",
       });
       return;
+    }
+
+    // Index only when search was just turned on, so ordinary edits never
+    // wait on it. A partial run can be resumed from the event page.
+    if (semanticSearchEnabled && !client.semanticSearchEnabled) {
+      await indexEventPhotos(client.slug, (done, total, waiting) =>
+        setIndexProgress(
+          waiting
+            ? `Esperando límite del servicio (${done} de ${total})...`
+            : `Indexando fotos ${done} de ${total}...`,
+        ),
+      );
     }
 
     window.location.href = `/events/${client.slug}`;
@@ -318,7 +332,7 @@ export default function EditForm({ client }: { client: Client }) {
               />
             </svg>
           )}
-          {submitting ? "Guardando..." : "Guardar cambios"}
+          {indexProgress ?? (submitting ? "Guardando..." : "Guardar cambios")}
         </button>
         <a
           href={`/events/${client.slug}`}

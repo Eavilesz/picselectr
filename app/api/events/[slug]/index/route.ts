@@ -6,6 +6,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { r2, BUCKET } from "@/lib/r2-client";
 import {
   EMBEDDING_MODEL_TAG,
+  EmbeddingRateLimitError,
   embedImages,
   logAiUsage,
 } from "@/lib/embeddings";
@@ -23,7 +24,9 @@ export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 const BATCH_SIZE = 50; // photos per call
-const CHUNK_SIZE = 10; // images per OpenRouter request
+// Images per OpenRouter request. The upstream quota counts requests per
+// minute, so bigger requests go further (25 measured at ~1.2s; 50 at ~11s).
+const CHUNK_SIZE = 25;
 const PREP_CONCURRENCY = 4; // originals decoded at once (memory)
 const TIME_BUDGET_MS = 45_000; // leaves headroom for the last chunk
 const AI_IMAGE_SIZE = 768; // long edge sent to the model
@@ -197,9 +200,15 @@ export async function POST(
       embeddings = result.embeddings;
       await logAiUsage(slug, "index", result.usage);
     } catch (err) {
-      // Provider down / rate limited: stop here, the next call resumes
-      console.error("Index: embedding failed", err);
-      stopReason = "embedding_error";
+      // Stop here; the next call resumes. "rate_limited" tells the client
+      // to wait for the per-minute quota to reset before calling again.
+      if (err instanceof EmbeddingRateLimitError) {
+        console.warn("Index: rate limited", err.message);
+        stopReason = "rate_limited";
+      } else {
+        console.error("Index: embedding failed", err);
+        stopReason = "embedding_error";
+      }
       break;
     }
 

@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import { getStoredProducts, getSelections } from "../store";
 import { EVENT_LABELS } from "../types";
 import { CopyButton } from "./CopyButton";
-import { getPhotosByIds } from "@/lib/r2";
+import { getPhotoCount, getPhotosByIds } from "@/lib/r2";
+import { getIndexedCount } from "@/lib/embeddings";
 import SelectedPhotosSection from "./SelectedPhotosSection";
+import IndexingCard from "./IndexingCard";
 
 function formatDeadline(iso: string | null) {
   if (!iso) return "—";
@@ -65,7 +67,13 @@ export default async function ProductDetailPage({
       ...selections.cover,
     ]),
   ];
-  const selectedPhotos = await getPhotosByIds(allSelectedIds);
+  const [selectedPhotos, indexing] = await Promise.all([
+    getPhotosByIds(allSelectedIds),
+    // Only owners reach this point (getStoredProducts is RLS-scoped)
+    client.semanticSearchEnabled
+      ? Promise.all([getIndexedCount(slug), getPhotoCount(slug)])
+      : null,
+  ]);
   const photoMap = new Map(selectedPhotos.map((p) => [p.id, p]));
 
   const clientPath = `/select/${client.slug}`;
@@ -239,6 +247,14 @@ export default async function ProductDetailPage({
           </div>
         </div>
       </div>
+
+      {indexing && (
+        <IndexingCard
+          slug={slug}
+          initialIndexed={indexing[0]}
+          initialTotal={indexing[1]}
+        />
+      )}
 
       {/* Selected photos section */}
       <SelectedPhotosSection
