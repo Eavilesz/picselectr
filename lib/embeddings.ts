@@ -16,10 +16,12 @@ export const EMBEDDING_DIMENSIONS = 768; // must match vector(768) in the DB
 export const EMBEDDING_MODEL_TAG = `${EMBEDDING_MODEL}@${EMBEDDING_DIMENSIONS}`;
 
 // Cosine similarity below which a photo isn't returned. Set with
-// scripts/eval-search.mjs on a 122-photo wedding (Nov 2026): unrelated
-// queries topped out at 0.551, real matches start around 0.60, and recall
-// drops past 0.60. 0.58 sits mid-gap. Re-run the eval if you change it.
-export const SEARCH_MIN_SIMILARITY = 0.58;
+// scripts/eval-search.mjs on a 122-photo wedding (Nov 2026, 9 labeled +
+// 5 unrelated queries): unrelated queries topped out at 0.551, while short
+// queries ("anillos", "un niño") score their matches at 0.57-0.59. 0.57
+// keeps those and still returns nothing for every unrelated query.
+// Re-run the eval if you change it.
+export const SEARCH_MIN_SIMILARITY = 0.57;
 
 // Results scoring more than this below the best match are dropped. Every
 // photo of an event shares its theme (a wedding scores ~0.60 against any

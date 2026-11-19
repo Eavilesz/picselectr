@@ -16,6 +16,10 @@ import {
 
 const COVER_LIMIT = 2;
 const INITIAL_BATCH = 60;
+// Search results shown before "Ver más resultados". Scores flatten out after
+// the first dozen (the rest just share the event's theme); 12 measured ~75%
+// precision on a labeled wedding. Keep scripts/eval-search.mjs's K in sync.
+const SEARCH_FIRST_RESULTS = 12;
 const BATCH_SIZE = 40;
 const AUTOSAVE_DELAY = 1500;
 const RETRY_DELAY = 5000;
@@ -54,10 +58,12 @@ export default function SelectionPage({
   const [isFinalized, setIsFinalized] = useState(client.isReady);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [finalizeError, setFinalizeError] = useState(false);
-  // Active semantic search: matching photo ids, best match first
+  // Active semantic search: matching photo ids, best match first. showAll =
+  // the client asked for the results past SEARCH_FIRST_RESULTS.
   const [search, setSearch] = useState<{
     query: string;
     ids: string[];
+    showAll: boolean;
   } | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -289,18 +295,25 @@ export default function SelectionPage({
   };
 
   // A search narrows the current mode's photos to the matches, in relevance
-  // order. Selection, preview and prev/next all work off this same list.
-  const availablePhotos = (() => {
-    const modePhotos = getAvailablePhotos();
-    if (!search) return modePhotos;
+  // order, first SEARCH_FIRST_RESULTS only until "Ver más". Selection,
+  // preview and prev/next all work off this same list.
+  const searchMatches = (() => {
+    if (!search) return null;
     const rank = new Map(search.ids.map((id, i) => [id, i]));
-    return modePhotos
+    return getAvailablePhotos()
       .filter((p) => rank.has(p.id))
       .sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
   })();
+  const hiddenSearchResults =
+    searchMatches && !search?.showAll
+      ? Math.max(searchMatches.length - SEARCH_FIRST_RESULTS, 0)
+      : 0;
+  const availablePhotos = searchMatches
+    ? searchMatches.slice(0, searchMatches.length - hiddenSearchResults)
+    : getAvailablePhotos();
 
   const handleSearchResults = (query: string | null, ids: string[] | null) => {
-    setSearch(query && ids ? { query, ids } : null);
+    setSearch(query && ids ? { query, ids, showAll: false } : null);
     setVisibleCount(INITIAL_BATCH);
   };
   const visiblePhotos = availablePhotos.slice(0, visibleCount);
@@ -441,6 +454,19 @@ export default function SelectionPage({
           />
           {visibleCount < availablePhotos.length && (
             <div ref={sentinelRef} className="h-24" />
+          )}
+          {hiddenSearchResults > 0 && (
+            <div className="flex justify-center px-6 pt-8">
+              <button
+                type="button"
+                onClick={() =>
+                  setSearch((s) => (s ? { ...s, showAll: true } : s))
+                }
+                className="border border-white/30 text-white text-xs tracking-[0.2em] uppercase px-6 py-3 hover:bg-white hover:text-black transition-all"
+              >
+                Ver más resultados ({hiddenSearchResults})
+              </button>
+            </div>
           )}
         </>
       )}

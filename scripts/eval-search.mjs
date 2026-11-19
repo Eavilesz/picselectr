@@ -3,7 +3,7 @@
 // chosen from data instead of guessed.
 //
 //   node --env-file=.env.local scripts/eval-search.mjs scripts/eval/<file>.json
-//   node --env-file=.env.local scripts/eval-search.mjs <file>.json --k 20 --thresholds 0.5,0.55,0.6 --margins 0.04,0.06,0.08
+//   node --env-file=.env.local scripts/eval-search.mjs <file>.json --k 12 --thresholds 0.5,0.55,0.6 --margins 0.04,0.06,0.08
 //
 // Ground-truth file (see scripts/eval/ground-truth.example.json):
 //   {
@@ -19,7 +19,7 @@
 //
 // The app drops a result when its similarity is below the threshold t OR
 // more than the margin m below the best match. Metrics:
-//   recall@K  = relevant photos found in the top K / relevant photos
+//   recall@K  = relevant photos found in the top K / min(relevant photos, K)
 //               (averaged over positive queries)
 //   precision = relevant photos shown / photos shown (averaged over positive
 //               queries that show anything). Only as good as the labels: a
@@ -50,7 +50,7 @@ const flag = (name) => {
 
 if (!file) {
   console.error(
-    "Usage: node --env-file=.env.local scripts/eval-search.mjs <ground-truth.json> [--k 20] [--thresholds 0.5,0.6] [--margins 0.04,0.06]",
+    "Usage: node --env-file=.env.local scripts/eval-search.mjs <ground-truth.json> [--k 12] [--thresholds 0.5,0.6] [--margins 0.04,0.06]",
   );
   process.exit(1);
 }
@@ -73,7 +73,9 @@ const MODEL_TAG = `${MODEL}@${DIMENSIONS}`;
 const APP_THRESHOLD = Number(constant("SEARCH_MIN_SIMILARITY").split(/\s/)[0]);
 const APP_MARGIN = Number(constant("SEARCH_RELATIVE_MARGIN").split(/\s/)[0]);
 
-const K = Number(flag("k") ?? 20);
+// Default = what the /select page shows before "Ver más resultados"
+// (SEARCH_FIRST_RESULTS in app/select/[slug]/SelectionPage.tsx)
+const K = Number(flag("k") ?? 12);
 const numberList = (value, appValue) =>
   [...new Set(value.split(",").map(Number).concat(appValue))].sort(
     (a, b) => a - b,
@@ -240,7 +242,9 @@ function evaluate(q, t, m = null) {
   return {
     shown: shown.length,
     shownRows: shown,
-    recall: q.relevant.size ? hits / q.relevant.size : null,
+    // Out of what fits in K: with 75 relevant photos and K=20, finding 20 is
+    // a perfect score, not 27%
+    recall: q.relevant.size ? hits / Math.min(q.relevant.size, K) : null,
     precision: q.relevant.size && shown.length ? hits / shown.length : null,
   };
 }
@@ -304,7 +308,7 @@ function sweepRow(label, t, m) {
 }
 const header = (name) =>
   console.log(`  ${name.padEnd(9)}   recall@${K}   precision   negatives empty   avg shown`);
-const tag = (v, appValue) => v.toFixed(2) + (v === appValue ? " ←" : "");
+const tag = (v, appValue) => String(v) + (v === appValue ? " ←" : "");
 
 // Threshold sweep: picks SEARCH_MIN_SIMILARITY (keeps unrelated queries empty)
 console.log(`\nThreshold sweep, no margin (app uses ${APP_THRESHOLD})`);
