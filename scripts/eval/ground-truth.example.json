@@ -1,0 +1,33 @@
+{
+  "eventSlug": "abc123",
+  "queries": [
+    {
+      "query": "la novia maquillándose",
+      "relevant": ["IMG_1201", "IMG_1202", "IMG_1203"]
+    },
+    {
+      "query": "el primer baile",
+      "relevant": ["IMG_1450", "IMG_1451", "IMG_1452", "IMG_1460"]
+    },
+    {
+      "query": "los anillos",
+      "relevant": ["IMG_1310", "IMG_1312"]
+    },
+    {
+      "query": "fotos en la iglesia",
+      "relevant": ["IMG_1300", "IMG_1301", "IMG_1302", "IMG_1303", "IMG_1305"]
+    },
+    {
+      "query": "un perro jugando en la playa",
+      "relevant": []
+    },
+    {
+      "query": "un carro de carrera",
+      "relevant": []
+    },
+    {
+      "query": "personas haciendo ejercicio",
+      "relevant": []
+    }
+  ]
+}
