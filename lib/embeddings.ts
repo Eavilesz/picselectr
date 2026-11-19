@@ -15,10 +15,18 @@ export const EMBEDDING_DIMENSIONS = 768; // must match vector(768) in the DB
 // full-size one from the same model.
 export const EMBEDDING_MODEL_TAG = `${EMBEDDING_MODEL}@${EMBEDDING_DIMENSIONS}`;
 
-// Cosine similarity below which a photo isn't returned. This model scores
-// unrelated text/image pairs around 0.5, so the bar sits above that.
-// PROVISIONAL: tune with scripts/eval-search.mjs.
-export const SEARCH_MIN_SIMILARITY = 0.6;
+// Cosine similarity below which a photo isn't returned. Set with
+// scripts/eval-search.mjs on a 122-photo wedding (Nov 2026): unrelated
+// queries topped out at 0.551, real matches start around 0.60, and recall
+// drops past 0.60. 0.58 sits mid-gap. Re-run the eval if you change it.
+export const SEARCH_MIN_SIMILARITY = 0.58;
+
+// Results scoring more than this below the best match are dropped. Every
+// photo of an event shares its theme (a wedding scores ~0.60 against any
+// wedding query), so the fixed threshold alone lets the whole event through;
+// this keeps only the photos close to what the query actually describes.
+// PROVISIONAL: tune with scripts/eval-search.mjs (--margins).
+export const SEARCH_RELATIVE_MARGIN = 0.06;
 
 const ENDPOINT = "https://openrouter.ai/api/v1/embeddings";
 const REQUEST_TIMEOUT_MS = 30_000;

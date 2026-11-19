@@ -6,6 +6,7 @@ import {
   EMBEDDING_MODEL_TAG,
   EmbeddingBusyError,
   SEARCH_MIN_SIMILARITY,
+  SEARCH_RELATIVE_MARGIN,
   embedQuery,
   logAiUsage,
 } from "@/lib/embeddings";
@@ -104,8 +105,12 @@ export async function POST(
     return error("No se pudo completar la búsqueda", 500);
   }
 
-  const results = (data as { photo_id: string; similarity: number }[]).map(
-    (r) => ({ id: r.photo_id, similarity: r.similarity }),
-  );
+  // Rows come best-first. Keep only those close to the best match: the rest
+  // pass the threshold just for sharing the event's theme.
+  const rows = data as { photo_id: string; similarity: number }[];
+  const cutoff = (rows[0]?.similarity ?? 0) - SEARCH_RELATIVE_MARGIN;
+  const results = rows
+    .filter((r) => r.similarity >= cutoff)
+    .map((r) => ({ id: r.photo_id, similarity: r.similarity }));
   return NextResponse.json({ results });
 }
