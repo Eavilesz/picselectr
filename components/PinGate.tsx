@@ -1,82 +1,36 @@
 "use client";
 
-import { useSyncExternalStore, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { verifyEventPin } from "@/app/events/store";
+import { PIN_LOCKED_MESSAGE, PIN_WRONG_MESSAGE } from "@/lib/pin-messages";
 
-const SESSION_KEY = (slug: string) => `pin_verified_${slug}`;
-const PIN_EVENT = "picselectr:pin-verified";
-const MAX_ATTEMPTS = 5;
-
-// Shows the PIN form again. Used when the server no longer recognizes the
-// visitor (no/expired access cookie, e.g. PIN entered before the cookie
-// existed) even though this browser remembers the PIN as verified.
-export function resetPinVerification(slug: string) {
-  try {
-    localStorage.removeItem(SESSION_KEY(slug));
-  } catch {
-    // storage unavailable: the gate will simply stay as it is
-  }
-  window.dispatchEvent(new Event(PIN_EVENT));
-}
-
-function subscribe(callback: () => void) {
-  window.addEventListener("storage", callback);
-  window.addEventListener(PIN_EVENT, callback);
-  return () => {
-    window.removeEventListener("storage", callback);
-    window.removeEventListener(PIN_EVENT, callback);
-  };
-}
-
-export default function PinGate({
-  slug,
-  children,
-}: {
-  slug: string;
-  children: React.ReactNode;
-}) {
-  const verified = useSyncExternalStore(
-    subscribe,
-    () => localStorage.getItem(SESSION_KEY(slug)) === "1",
-    () => false,
-  );
-  // false on the server, true on the client — prevents PIN gate flash for authenticated users
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
+// PIN form for /select. The page only renders this when the visitor has no
+// access cookie, and sends no photos with it: the PIN is enforced on the
+// server. A correct PIN sets the cookie in the server action, which
+// re-renders the page with the selection view.
+export default function PinGate({ slug }: { slug: string }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
-  const [attempts, setAttempts] = useState(0);
+  // The server decides when to lock (see lib/pin-attempts.ts)
+  const [blocked, setBlocked] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (attempts >= MAX_ATTEMPTS) return;
+    if (blocked) return;
 
     startTransition(async () => {
-      const ok = await verifyEventPin(slug, pin);
-      if (ok) {
-        localStorage.setItem(SESSION_KEY(slug), "1");
-        window.dispatchEvent(new Event(PIN_EVENT));
+      const result = await verifyEventPin(slug, pin);
+      if (result === "ok") return;
+      setPin("");
+      if (result === "locked") {
+        setBlocked(true);
+        setError(PIN_LOCKED_MESSAGE);
       } else {
-        const next = attempts + 1;
-        setAttempts(next);
-        setPin("");
-        setError(
-          next >= MAX_ATTEMPTS
-            ? "Demasiados intentos. Contacta al fotógrafo."
-            : "PIN incorrecto. Intenta de nuevo.",
-        );
+        setError(PIN_WRONG_MESSAGE);
       }
     });
   }
-
-  if (!mounted) return null;
-  if (verified) return <>{children}</>;
-
-  const blocked = attempts >= MAX_ATTEMPTS;
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6">
@@ -86,12 +40,17 @@ export default function PinGate({
 
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4">
         <div>
-          <label className="block text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-3">
+          <label
+            htmlFor="event-pin"
+            className="block text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-3"
+          >
             PIN de acceso
           </label>
           <input
+            id="event-pin"
             type="text"
             inputMode="numeric"
+            autoComplete="off"
             maxLength={4}
             value={pin}
             onChange={(e) =>

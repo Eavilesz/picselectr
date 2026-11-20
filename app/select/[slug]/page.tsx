@@ -5,6 +5,7 @@ import { getEventTitleLabel } from "@/app/events/types";
 import { getPhotosBySlug } from "@/lib/r2";
 import SelectionPage from "./SelectionPage";
 import PinGate from "@/components/PinGate";
+import { hasEventAccess } from "@/lib/event-access";
 
 export async function generateMetadata({
   params,
@@ -32,24 +33,28 @@ export default async function SelectPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [client, photos, savedSelections, isOwner] = await Promise.all([
-    getEventBySlug(slug),
-    getPhotosBySlug(slug),
-    getSelections(slug),
-    isEventOwner(slug),
-  ]);
+  const client = await getEventBySlug(slug);
   if (!client) notFound();
 
-  const selectionPage = (
+  // The PIN is enforced here, on the server: without the access cookie
+  // (set by a correct PIN) no photos or selections are sent. The signed-in
+  // owner skips the PIN.
+  const [isOwner, hasAccess] = await Promise.all([
+    isEventOwner(slug),
+    hasEventAccess(slug),
+  ]);
+  if (!isOwner && !hasAccess) return <PinGate slug={slug} />;
+
+  const [photos, savedSelections] = await Promise.all([
+    getPhotosBySlug(slug),
+    getSelections(slug),
+  ]);
+
+  return (
     <SelectionPage
       client={client}
       photos={photos}
       savedSelections={savedSelections}
     />
   );
-
-  // The signed-in owner skips the client PIN
-  if (isOwner) return selectionPage;
-
-  return <PinGate slug={slug}>{selectionPage}</PinGate>;
 }

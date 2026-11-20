@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { Client } from "./types";
 import { deleteEventPhotos } from "@/lib/r2";
-import { grantEventAccess } from "@/lib/event-access";
+import { grantEventAccess, hasEventAccess } from "@/lib/event-access";
+import { checkPinWithLimit, type PinCheck } from "@/lib/pin-attempts";
 
 // ---------------------------------------------------------------------------
 // Row types (as stored in Supabase)
@@ -184,25 +185,28 @@ export async function updateSettings(settings: {
   if (error) throw new Error(error.message);
 }
 
+// Checks a client's PIN, with the server-side attempt limit. On success it
+// sets the access cookie, which the /select page, saving selections and
+// search all check; setting it re-renders the page with the photos.
 export async function verifyEventPin(
   slug: string,
   inputPin: string,
-): Promise<boolean> {
-  const supabase = createServiceClient();
-
-  const { data, error } = await supabase
+): Promise<PinCheck> {
+  const { data, error } = await createServiceClient()
     .from("events")
     .select("pin")
     .eq("slug", slug)
     .single();
-
-  if (error || !data) return false;
+  if (error || !data) return "wrong";
   const storedPin = (data as { pin: string | null }).pin;
-  if (!storedPin || storedPin !== inputPin) return false;
 
-  // Lets server endpoints (semantic search) verify the client got past the PIN
-  await grantEventAccess(slug, storedPin);
-  return true;
+  const result = await checkPinWithLimit(
+    "event",
+    slug,
+    async () => !!storedPin && storedPin === inputPin,
+  );
+  if (result === "ok") await grantEventAccess(slug, storedPin!);
+  return result;
 }
 
 export async function updateStoredProduct(
@@ -354,6 +358,14 @@ async function persistSelections(
   return event as EventLimits | null;
 }
 
+// Server actions are callable by anyone who has the page, so writes to a
+// client's selection check access themselves: the event owner, or a visitor
+// with the access cookie a correct PIN sets.
+async function assertSelectionAccess(slug: string): Promise<void> {
+  if ((await isEventOwner(slug)) || (await hasEventAccess(slug))) return;
+  throw new Error("Ingresa el PIN para continuar");
+}
+
 // Autosave: stores the current selection without notifying anyone.
 // If the event was already finalized but the selection is no longer complete,
 // it goes back to "in progress".
@@ -363,6 +375,7 @@ export async function saveSelections(
   album: string[],
   cover: string[],
 ): Promise<void> {
+  await assertSelectionAccess(slug);
   const supabase = createServiceClient();
   const ev = await persistSelections(slug, digital, album, cover);
 
@@ -384,6 +397,7 @@ export async function finalizeSelections(
   album: string[],
   cover: string[],
 ): Promise<void> {
+  await assertSelectionAccess(slug);
   const supabase = createServiceClient();
   const ev = await persistSelections(slug, digital, album, cover);
 
@@ -440,6 +454,8 @@ export async function saveWorkedOn(
   slug: string,
   workedOn: string[],
 ): Promise<void> {
+  // Studio-side progress marks: owner only
+  if (!(await isEventOwner(slug))) throw new Error("Evento no encontrado");
   const supabase = createServiceClient();
 
   // Update if row exists; insert (with empty selections) if it doesn't yet

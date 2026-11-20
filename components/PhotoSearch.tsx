@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { resetPinVerification } from "@/components/PinGate";
+import { useRouter } from "next/navigation";
 import type { EventType } from "@/app/events/types";
 
 // Example query per event type. They follow the pattern that searched best
@@ -32,6 +32,7 @@ export default function PhotoSearch({
   activeQuery: string | null;
   onResults: (query: string | null, ids: string[] | null) => void;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,8 +52,10 @@ export default function PhotoSearch({
       });
       const body = await res.json().catch(() => ({}));
 
+      // Access expired or the PIN changed: re-rendering the page on the
+      // server shows the PIN form again
       if (res.status === 401 && body?.code === "pin_required") {
-        resetPinVerification(slug);
+        router.refresh();
         return;
       }
       if (!res.ok) throw new Error(body?.error ?? "No se pudo buscar");
