@@ -1,5 +1,4 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-!.env.example
 # dependencies
 /node_modules
 /.pnp
@@ -33,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# placeholders only; must come after .env* to take effect
+!.env.example
 
 # vercel
 .vercel
