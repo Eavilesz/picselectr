@@ -5,7 +5,7 @@ import PhotoGallery from "@/components/PhotoGallery";
 import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
-import PhotoSearch from "@/components/PhotoSearch";
+import PhotoSearch, { searchExample } from "@/components/PhotoSearch";
 import { Client, getEventTitleLabel } from "@/app/events/types";
 import { Photo } from "@/lib/r2";
 import {
@@ -425,6 +425,7 @@ export default function SelectionPage({
       {client.semanticSearchEnabled && (
         <PhotoSearch
           slug={client.slug}
+          eventType={client.eventType}
           activeQuery={search?.query ?? null}
           onResults={handleSearchResults}
         />
@@ -438,7 +439,8 @@ export default function SelectionPage({
           </p>
           {search && (
             <p className="mt-3 text-xs text-white/30">
-              Prueba describiendo la foto de otra forma.
+              Prueba con quién aparece, ej. &ldquo;
+              {searchExample(client.eventType)}&rdquo;
             </p>
           )}
         </div>

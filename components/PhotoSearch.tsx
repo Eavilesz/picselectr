@@ -2,15 +2,33 @@
 
 import { useState } from "react";
 import { resetPinVerification } from "@/components/PinGate";
+import type { EventType } from "@/app/events/types";
+
+// Example query per event type. They follow the pattern that searched best
+// in scripts/eval-search.mjs: who appears + who they're with / what they do.
+// Vague groups ("los invitados") and places scored worst.
+const SEARCH_EXAMPLES: Record<EventType, string> = {
+  wedding: "la novia con su papá",
+  quinceañera: "la quinceañera con sus padres",
+  birthday: "soplando las velas",
+  photobooth: "sonriendo con la familia",
+  other: "con la familia",
+};
+
+export function searchExample(eventType: EventType): string {
+  return SEARCH_EXAMPLES[eventType] ?? SEARCH_EXAMPLES.other;
+}
 
 // Semantic search box for the /select page. Reports the matching photo ids
 // (best first) to the parent, which narrows its own grid; null = no search.
 export default function PhotoSearch({
   slug,
+  eventType,
   activeQuery,
   onResults,
 }: {
   slug: string;
+  eventType: EventType;
   activeQuery: string | null;
   onResults: (query: string | null, ids: string[] | null) => void;
 }) {
@@ -75,7 +93,7 @@ export default function PhotoSearch({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             maxLength={200}
-            placeholder="Busca una foto, ej. “el primer baile”"
+            placeholder={`Busca una foto, ej. “${searchExample(eventType)}”`}
             className="w-full bg-white/5 border border-white/10 pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30"
           />
         </div>
@@ -88,6 +106,11 @@ export default function PhotoSearch({
         </button>
       </form>
 
+      {!activeQuery && !error && (
+        <p className="mt-2 text-xs text-white/30">
+          Describe quién aparece y qué está haciendo.
+        </p>
+      )}
       {activeQuery && (
         <p className="mt-2 text-xs text-white/40">
           Resultados para &ldquo;{activeQuery}&rdquo; ·{" "}
