@@ -2,8 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { unlockGallery } from "./actions";
-
-const MAX_ATTEMPTS = 5;
+import { PIN_LOCKED_MESSAGE, PIN_WRONG_MESSAGE } from "@/lib/pin-messages";
 
 export default function GalleryPinForm({
   slug,
@@ -16,25 +15,24 @@ export default function GalleryPinForm({
 }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
-  const [attempts, setAttempts] = useState(0);
+  // The server decides when to lock (see lib/pin-attempts.ts)
+  const [blocked, setBlocked] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const blocked = attempts >= MAX_ATTEMPTS;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (blocked) return;
     startTransition(async () => {
-      const { ok } = await unlockGallery(slug, pin);
+      const { result } = await unlockGallery(slug, pin);
       // On success the server re-renders this route with the gallery
-      if (ok) return;
-      const next = attempts + 1;
-      setAttempts(next);
+      if (result === "ok") return;
       setPin("");
-      setError(
-        next >= MAX_ATTEMPTS
-          ? "Demasiados intentos. Contacta al fotógrafo."
-          : "PIN incorrecto. Intenta de nuevo.",
-      );
+      if (result === "locked") {
+        setBlocked(true);
+        setError(PIN_LOCKED_MESSAGE);
+      } else {
+        setError(PIN_WRONG_MESSAGE);
+      }
     });
   }
 
