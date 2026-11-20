@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+boda-test.json
 
 # next.js
 /.next/
