@@ -26,6 +26,7 @@ interface EventRow {
   studio_name: string | null;
   custom_event_label: string | null;
   semantic_search_enabled: boolean;
+  language: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -47,6 +48,7 @@ function toClient(event: EventRow): Client {
     studioName: event.studio_name ?? null,
     customEventLabel: event.custom_event_label ?? null,
     semanticSearchEnabled: event.semantic_search_enabled ?? false,
+    language: event.language === "en" ? "en" : "es",
   };
 }
 
@@ -91,6 +93,7 @@ export async function addStoredProduct(product: Client): Promise<void> {
     studio_name: studioName,
     custom_event_label: product.customEventLabel ?? null,
     semantic_search_enabled: product.semanticSearchEnabled ?? false,
+    language: product.language ?? "es",
   });
 
   if (error) throw new Error(error.message);
@@ -231,6 +234,7 @@ export async function updateStoredProduct(
     dbUpdates.custom_event_label = updates.customEventLabel;
   if (updates.semanticSearchEnabled !== undefined)
     dbUpdates.semantic_search_enabled = updates.semanticSearchEnabled;
+  if (updates.language !== undefined) dbUpdates.language = updates.language;
 
   const { error } = await supabase
     .from("events")

@@ -2,9 +2,10 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { EventType } from "../types";
+import { EventType, EventLanguage } from "../types";
 import { addStoredProduct } from "../store";
 import SemanticSearchToggle from "@/components/SemanticSearchToggle";
+import EventLanguagePicker from "@/components/EventLanguagePicker";
 import { indexEventPhotos } from "../indexing";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
@@ -36,6 +37,7 @@ export default function NewProductPage() {
   );
   const [customEventLabel, setCustomEventLabel] = useState("");
   const [semanticSearchEnabled, setSemanticSearchEnabled] = useState(false);
+  const [language, setLanguage] = useState<EventLanguage>("es");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -132,6 +134,7 @@ export default function NewProductPage() {
         customEventLabel:
           eventType === "other" ? customEventLabel.trim() : null,
         semanticSearchEnabled,
+        language,
       });
       if (selectedFiles.length > 0) {
         await uploadFilesToR2(slug);
@@ -368,6 +371,8 @@ export default function NewProductPage() {
           enabled={semanticSearchEnabled}
           onChange={setSemanticSearchEnabled}
         />
+
+        <EventLanguagePicker value={language} onChange={setLanguage} />
 
         {/* PIN */}
         <div>

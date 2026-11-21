@@ -1,9 +1,19 @@
+import { getMessages } from "@/lib/i18n";
+
 export type EventType =
   | "wedding"
   | "birthday"
   | "photobooth"
   | "quinceañera"
   | "other";
+
+// Language of the pages the event's client sees
+export type EventLanguage = "es" | "en";
+
+export const EVENT_LANGUAGES: { value: EventLanguage; label: string }[] = [
+  { value: "es", label: "Español" },
+  { value: "en", label: "English" },
+];
 
 export interface Client {
   id: string;
@@ -19,6 +29,7 @@ export interface Client {
   studioName?: string | null;
   customEventLabel?: string | null;
   semanticSearchEnabled?: boolean;
+  language?: EventLanguage;
 }
 
 export const EVENT_LABELS: Record<EventType, string> = {
@@ -29,19 +40,13 @@ export const EVENT_LABELS: Record<EventType, string> = {
   other: "Otro",
 };
 
-const EVENT_TITLE_LABELS: Record<EventType, string> = {
-  wedding: "La Boda de",
-  quinceañera: "La Quinceañera de",
-  birthday: "El Cumpleaños de",
-  photobooth: "La Sesión de",
-  other: "El Evento de",
-};
-
-// "La Boda de", "El Cumpleaños de", or the custom label for "other" events
+// "La Boda de" / "The Wedding of", or the custom label for "other" events,
+// in the event's language
 export function getEventTitleLabel(
-  client: Pick<Client, "eventType" | "customEventLabel">,
+  client: Pick<Client, "eventType" | "customEventLabel" | "language">,
 ): string {
+  const t = getMessages(client.language);
   return client.eventType === "other" && client.customEventLabel
-    ? client.customEventLabel + " de"
-    : EVENT_TITLE_LABELS[client.eventType];
+    ? t.customEventTitle(client.customEventLabel)
+    : t.eventTitle[client.eventType];
 }

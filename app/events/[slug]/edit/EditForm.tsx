@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { EventType, Client } from "../../types";
+import { EventType, EventLanguage, Client } from "../../types";
 import { updateStoredProduct } from "../../store";
 import SemanticSearchToggle from "@/components/SemanticSearchToggle";
+import EventLanguagePicker from "@/components/EventLanguagePicker";
 import { indexEventPhotos } from "../../indexing";
 
 const EVENT_OPTIONS: { value: EventType; label: string }[] = [
@@ -49,6 +50,9 @@ export default function EditForm({ client }: { client: Client }) {
   );
   const [semanticSearchEnabled, setSemanticSearchEnabled] = useState(
     client.semanticSearchEnabled ?? false,
+  );
+  const [language, setLanguage] = useState<EventLanguage>(
+    client.language ?? "es",
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -99,6 +103,7 @@ export default function EditForm({ client }: { client: Client }) {
         customEventLabel:
           eventType === "other" ? customEventLabel.trim() : null,
         semanticSearchEnabled,
+        language,
       });
     } catch (err) {
       setSubmitting(false);
@@ -300,6 +305,8 @@ export default function EditForm({ client }: { client: Client }) {
         enabled={semanticSearchEnabled}
         onChange={setSemanticSearchEnabled}
       />
+
+      <EventLanguagePicker value={language} onChange={setLanguage} />
 
       {/* Form error */}
       {errors.form && <p className="text-xs text-rose-400">{errors.form}</p>}
