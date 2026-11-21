@@ -5,7 +5,8 @@ import PhotoGallery from "@/components/PhotoGallery";
 import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
-import PhotoSearch, { searchExample } from "@/components/PhotoSearch";
+import PhotoSearch from "@/components/PhotoSearch";
+import { useT } from "@/components/I18nProvider";
 import { Client, getEventTitleLabel } from "@/app/events/types";
 import { Photo } from "@/lib/r2";
 import {
@@ -16,7 +17,7 @@ import {
 
 const COVER_LIMIT = 2;
 const INITIAL_BATCH = 60;
-// Search results shown before "Ver más resultados". Scores flatten out after
+// Search results shown before "See more results". Scores flatten out after
 // the first dozen (the rest just share the event's theme); 12 measured ~75%
 // precision on a labeled wedding. Keep scripts/eval-search.mjs's K in sync.
 const SEARCH_FIRST_RESULTS = 12;
@@ -37,6 +38,7 @@ export default function SelectionPage({
   photos: LocalPhoto[];
   savedSelections: Selections;
 }) {
+  const t = useT();
   const albumOnly = client.photoLimit == null && client.albumLimit != null;
   const hasAlbum = client.albumLimit != null;
 
@@ -340,7 +342,7 @@ export default function SelectionPage({
           </p>
         )}
         <p className="text-[10px] tracking-[0.35em] text-white/35 uppercase mb-5">
-          Selección de fotos
+          {t.page.eyebrow}
         </p>
         <h1 className="text-5xl md:text-6xl font-serif font-normal text-white leading-[1.1]">
           {titleLabel}
@@ -353,7 +355,7 @@ export default function SelectionPage({
             {photos.length}
           </span>
           <span className="text-xs tracking-[0.3em] text-white/60 uppercase">
-            {photos.length === 1 ? "foto" : "fotos"}
+            {t.page.photoCount(photos.length)}
           </span>
         </p>
       </header>
@@ -375,11 +377,7 @@ export default function SelectionPage({
             />
           </svg>
           <p className="text-xs text-amber-500/80 leading-relaxed">
-            {daysLeft === 0
-              ? "Hoy es el último día para seleccionar tus fotos."
-              : daysLeft === 1
-                ? "Queda 1 día para seleccionar tus fotos."
-                : `Quedan ${daysLeft} días para seleccionar tus fotos.`}
+            {t.page.deadline(daysLeft)}
           </p>
         </div>
       )}
@@ -411,14 +409,10 @@ export default function SelectionPage({
       {/* Info Message */}
       <div className="px-6 py-3">
         <p className="text-xs text-white/35 italic tracking-wide">
-          {currentMode === "digital" &&
-            "Selecciona las fotos que deseas recibir digitalmente"}
+          {currentMode === "digital" && t.page.hintDigital}
           {currentMode === "album" &&
-            (albumOnly
-              ? "Selecciona las fotos que irán en el álbum"
-              : "De tu selección digital, elige las que irán en el álbum")}
-          {currentMode === "cover" &&
-            `Elige ${COVER_LIMIT} fotos para la portada del álbum`}
+            (albumOnly ? t.page.hintAlbumOnly : t.page.hintAlbumFromDigital)}
+          {currentMode === "cover" && t.page.hintCover(COVER_LIMIT)}
         </p>
       </div>
 
@@ -435,12 +429,11 @@ export default function SelectionPage({
       {availablePhotos.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-6 py-24 text-center">
           <p className="text-white/30 text-sm tracking-widest uppercase">
-            {search ? "Sin resultados" : "Sin fotos"}
+            {search ? t.page.noResults : t.page.noPhotos}
           </p>
           {search && (
             <p className="mt-3 text-xs text-white/30">
-              Prueba con quién aparece, ej. &ldquo;
-              {searchExample(client.eventType)}&rdquo;
+              {t.page.noResultsTip(t.search.examples[client.eventType])}
             </p>
           )}
         </div>
@@ -466,7 +459,7 @@ export default function SelectionPage({
                 }
                 className="border border-white/30 text-white text-xs tracking-[0.2em] uppercase px-6 py-3 hover:bg-white hover:text-black transition-all"
               >
-                Ver más resultados ({hiddenSearchResults})
+                {t.page.moreResults(hiddenSearchResults)}
               </button>
             </div>
           )}

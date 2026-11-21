@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { getEventBySlug, isEventOwner } from "@/app/events/store";
 import { hasEventAccess } from "@/lib/event-access";
+import { getMessages } from "@/lib/i18n";
 import {
   EMBEDDING_MODEL_TAG,
   EmbeddingBusyError,
@@ -40,21 +41,23 @@ export async function POST(
     query?: unknown;
   } | null;
   const query = typeof body?.query === "string" ? body.query.trim() : "";
-  if (!query || query.length > MAX_QUERY_LENGTH) {
-    return error("Escribe qué foto buscas", 400);
-  }
 
   // Disabled and missing events look the same from outside
   const event = await getEventBySlug(slug);
+  // Errors are shown to the client, in the event's language
+  const t = getMessages(event?.language);
   if (!event?.semanticSearchEnabled) {
-    return error("Búsqueda no disponible", 404);
+    return error(t.api.unavailable, 404);
+  }
+  if (!query || query.length > MAX_QUERY_LENGTH) {
+    return error(t.api.emptyQuery, 400);
   }
 
   const owner = await isEventOwner(slug);
   if (!owner && !(await hasEventAccess(slug))) {
     // The client UI asks for the PIN again on this code (covers visitors
     // who passed PinGate before the access cookie existed)
-    return error("Ingresa el PIN para buscar", 401, "pin_required");
+    return error(t.api.pinRequired, 401, "pin_required");
   }
 
   const supabase = createServiceClient();
@@ -68,11 +71,7 @@ export async function POST(
       .eq("operation", "query")
       .gte("created_at", since);
     if ((count ?? 0) >= DAILY_QUERY_CAP) {
-      return error(
-        "Se alcanzó el límite de búsquedas por hoy. Intenta mañana.",
-        429,
-        "daily_cap",
-      );
+      return error(t.api.dailyCap, 429, "daily_cap");
     }
   }
 
@@ -84,9 +83,7 @@ export async function POST(
   } catch (err) {
     console.error("Search: embedding failed", err);
     return error(
-      err instanceof EmbeddingBusyError
-        ? "La búsqueda está ocupada. Intenta en un momento."
-        : "No se pudo completar la búsqueda",
+      err instanceof EmbeddingBusyError ? t.api.busy : t.api.failed,
       503,
     );
   }
@@ -102,7 +99,7 @@ export async function POST(
   });
   if (rpcError) {
     console.error("Search: rpc failed", rpcError);
-    return error("No se pudo completar la búsqueda", 500);
+    return error(t.api.failed, 500);
   }
 
   // Rows come best-first. Keep only those close to the best match: the rest

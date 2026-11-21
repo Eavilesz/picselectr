@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { verifyEventPin } from "@/app/events/store";
-import { PIN_LOCKED_MESSAGE, PIN_WRONG_MESSAGE } from "@/lib/pin-messages";
+import { useT } from "@/components/I18nProvider";
 
 // PIN form for /select. The page only renders this when the visitor has no
 // access cookie, and sends no photos with it: the PIN is enforced on the
 // server. A correct PIN sets the cookie in the server action, which
 // re-renders the page with the selection view.
 export default function PinGate({ slug }: { slug: string }) {
+  const t = useT();
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   // The server decides when to lock (see lib/pin-attempts.ts)
@@ -25,9 +26,9 @@ export default function PinGate({ slug }: { slug: string }) {
       setPin("");
       if (result === "locked") {
         setBlocked(true);
-        setError(PIN_LOCKED_MESSAGE);
+        setError(t.pin.locked);
       } else {
-        setError(PIN_WRONG_MESSAGE);
+        setError(t.pin.wrong);
       }
     });
   }
@@ -35,7 +36,7 @@ export default function PinGate({ slug }: { slug: string }) {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6">
       <p className="text-[10px] tracking-[0.35em] text-white/35 uppercase mb-8">
-        Acceso protegido
+        {t.pin.protectedAccess}
       </p>
 
       <form onSubmit={handleSubmit} className="w-full max-w-xs space-y-4">
@@ -44,7 +45,7 @@ export default function PinGate({ slug }: { slug: string }) {
             htmlFor="event-pin"
             className="block text-[10px] tracking-[0.2em] uppercase text-neutral-500 mb-3"
           >
-            PIN de acceso
+            {t.pin.label}
           </label>
           <input
             id="event-pin"
@@ -71,7 +72,7 @@ export default function PinGate({ slug }: { slug: string }) {
           disabled={pin.length !== 4 || blocked || isPending}
           className="w-full border border-white/60 text-white py-3 text-xs tracking-[0.3em] uppercase font-medium disabled:opacity-20 disabled:cursor-not-allowed hover:bg-white hover:text-black transition-all duration-300"
         >
-          {isPending ? "Verificando..." : "Entrar"}
+          {isPending ? t.pin.verifying : t.pin.submit}
         </button>
       </form>
     </div>

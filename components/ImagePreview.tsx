@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useT } from "@/components/I18nProvider";
 import { Photo } from "@/lib/r2";
 
 export type SelectionMode = "digital" | "album" | "cover";
@@ -26,6 +27,7 @@ export default function ImagePreview({
   onNext,
   onPrev,
 }: ImagePreviewProps) {
+  const t = useT();
   const [loadedPhotoId, setLoadedPhotoId] = useState<string | null>(null);
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -79,11 +81,7 @@ export default function ImagePreview({
           <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 bg-black/50 border border-white/10">
             <div className={`w-1.5 h-1.5 rounded-full ${displayColor.bg}`} />
             <span className="text-xs tracking-[0.2em] text-white/50 uppercase">
-              {selectionType === "digital"
-                ? "Digital"
-                : selectionType === "album"
-                  ? "Álbum"
-                  : "Portada"}
+              {t.modes[selectionType]}
             </span>
           </div>
         )}
@@ -92,7 +90,7 @@ export default function ImagePreview({
         <button
           onClick={handleToggle}
           className="absolute top-3 left-3 z-20 p-2 bg-black/50 hover:bg-black/80 transition-colors"
-          aria-label={isSelected ? "Unselect photo" : "Select photo"}
+          aria-label={isSelected ? t.photo.unselect : t.photo.select}
         >
           {isSelected ? (
             <svg
@@ -119,7 +117,7 @@ export default function ImagePreview({
         <button
           onClick={onClose}
           className="absolute top-3 right-3 z-20 p-2 bg-black/50 hover:bg-black/80 text-white hover:text-gray-300 transition-colors"
-          aria-label="Close preview"
+          aria-label={t.photo.close}
         >
           <svg
             className="w-7 h-7"
@@ -137,7 +135,7 @@ export default function ImagePreview({
           <button
             onClick={onPrev}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/50 hover:bg-black/80 text-white/70 hover:text-white transition-all"
-            aria-label="Foto anterior"
+            aria-label={t.photo.previous}
           >
             <svg
               className="w-8 h-8"
@@ -178,7 +176,7 @@ export default function ImagePreview({
           <button
             onClick={onNext}
             className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/50 hover:bg-black/80 text-white/70 hover:text-white transition-all"
-            aria-label="Siguiente foto"
+            aria-label={t.photo.next}
           >
             <svg
               className="w-8 h-8"

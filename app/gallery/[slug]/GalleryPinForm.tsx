@@ -2,7 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { unlockGallery } from "./actions";
-import { PIN_LOCKED_MESSAGE, PIN_WRONG_MESSAGE } from "@/lib/pin-messages";
+import { getMessages } from "@/lib/i18n";
+
+// Delivery galleries aren't translated yet
+const t = getMessages("es");
 
 export default function GalleryPinForm({
   slug,
@@ -29,9 +32,9 @@ export default function GalleryPinForm({
       setPin("");
       if (result === "locked") {
         setBlocked(true);
-        setError(PIN_LOCKED_MESSAGE);
+        setError(t.pin.locked);
       } else {
-        setError(PIN_WRONG_MESSAGE);
+        setError(t.pin.wrong);
       }
     });
   }

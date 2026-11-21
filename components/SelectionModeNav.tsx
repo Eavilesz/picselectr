@@ -1,3 +1,7 @@
+"use client";
+
+import { useT } from "@/components/I18nProvider";
+
 export type SelectionMode = "digital" | "album" | "cover";
 
 interface SelectionModeNavProps {
@@ -17,22 +21,23 @@ export default function SelectionModeNav({
   counts,
   modes: allowedModes,
 }: SelectionModeNavProps) {
+  const t = useT();
   const allModes = [
     {
       id: "digital" as SelectionMode,
-      label: "Digital",
+      label: t.modes.digital,
       activeText: "text-white",
       activeLine: "bg-white",
     },
     {
       id: "album" as SelectionMode,
-      label: "Álbum",
+      label: t.modes.album,
       activeText: "text-rose-300",
       activeLine: "bg-rose-300",
     },
     {
       id: "cover" as SelectionMode,
-      label: "Portada",
+      label: t.modes.cover,
       activeText: "text-amber-400",
       activeLine: "bg-amber-400",
     },

@@ -3,21 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { EventType } from "@/app/events/types";
-
-// Example query per event type. They follow the pattern that searched best
-// in scripts/eval-search.mjs: who appears + who they're with / what they do.
-// Vague groups ("los invitados") and places scored worst.
-const SEARCH_EXAMPLES: Record<EventType, string> = {
-  wedding: "la novia con su papá",
-  quinceañera: "la quinceañera con sus padres",
-  birthday: "soplando las velas",
-  photobooth: "sonriendo con la familia",
-  other: "con la familia",
-};
-
-export function searchExample(eventType: EventType): string {
-  return SEARCH_EXAMPLES[eventType] ?? SEARCH_EXAMPLES.other;
-}
+import { useT } from "@/components/I18nProvider";
 
 // Semantic search box for the /select page. Reports the matching photo ids
 // (best first) to the parent, which narrows its own grid; null = no search.
@@ -32,6 +18,7 @@ export default function PhotoSearch({
   activeQuery: string | null;
   onResults: (query: string | null, ids: string[] | null) => void;
 }) {
+  const t = useT();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -58,14 +45,14 @@ export default function PhotoSearch({
         router.refresh();
         return;
       }
-      if (!res.ok) throw new Error(body?.error ?? "No se pudo buscar");
+      if (!res.ok) throw new Error(body?.error ?? t.search.failed);
 
       onResults(
         q,
         (body.results as { id: string }[]).map((r) => r.id),
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo buscar");
+      setError(err instanceof Error ? err.message : t.search.failed);
     } finally {
       setLoading(false);
     }
@@ -96,7 +83,7 @@ export default function PhotoSearch({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             maxLength={200}
-            placeholder={`Busca una foto, ej. “${searchExample(eventType)}”`}
+            placeholder={t.search.placeholder(t.search.examples[eventType])}
             className="w-full bg-white/5 border border-white/10 pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30"
           />
         </div>
@@ -105,24 +92,22 @@ export default function PhotoSearch({
           disabled={!query.trim() || loading}
           className="border border-white/30 text-white text-xs tracking-[0.2em] uppercase px-4 py-2.5 hover:bg-white hover:text-black transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-white"
         >
-          {loading ? "Buscando..." : "Buscar"}
+          {loading ? t.search.searching : t.search.submit}
         </button>
       </form>
 
       {!activeQuery && !error && (
-        <p className="mt-2 text-xs text-white/30">
-          Describe quién aparece y qué está haciendo.
-        </p>
+        <p className="mt-2 text-xs text-white/30">{t.search.hint}</p>
       )}
       {activeQuery && (
         <p className="mt-2 text-xs text-white/40">
-          Resultados para &ldquo;{activeQuery}&rdquo; ·{" "}
+          {t.search.resultsFor} &ldquo;{activeQuery}&rdquo; ·{" "}
           <button
             type="button"
             onClick={handleClear}
             className="underline underline-offset-2 hover:text-white/70"
           >
-            Ver todas
+            {t.search.showAll}
           </button>
         </p>
       )}

@@ -1,4 +1,5 @@
 import { Photo } from "@/lib/r2";
+import { useT } from "@/components/I18nProvider";
 
 export type SelectionMode = "digital" | "album" | "cover";
 
@@ -19,6 +20,7 @@ export default function PhotoCard({
   onToggle,
   onPreview,
 }: PhotoCardProps) {
+  const t = useT();
   const handleHeartClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggle();
@@ -75,7 +77,7 @@ export default function PhotoCard({
       <button
         onClick={handleHeartClick}
         className="absolute top-1.5 left-1.5 z-20 p-1.5 focus:outline-none hover:scale-110 transition-transform"
-        aria-label={isSelected ? "Deseleccionar foto" : "Seleccionar foto"}
+        aria-label={isSelected ? t.photo.unselect : t.photo.select}
       >
         {isSelected ? (
           <svg

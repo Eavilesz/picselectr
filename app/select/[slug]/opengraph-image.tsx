@@ -2,8 +2,11 @@ import { ImageResponse } from "next/og";
 import { getEventBySlug } from "@/app/events/store";
 import { getEventTitleLabel } from "@/app/events/types";
 import { getPhotoCount } from "@/lib/r2";
+import { getMessages } from "@/lib/i18n";
 
-export const alt = "Selección de fotos";
+// Fixed per route in Next 16 (per-page alt needs generateImageMetadata, which
+// changes the image URL), so it stays language-neutral
+export const alt = "Picselectr";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -20,7 +23,8 @@ export default async function Image({
     getPhotoCount(slug),
   ]);
 
-  const titleLabel = client ? getEventTitleLabel(client) : "Selección de fotos";
+  const t = getMessages(client?.language);
+  const titleLabel = client ? getEventTitleLabel(client) : t.page.eyebrow;
   const name = client?.name ?? "";
 
   return new ImageResponse(
@@ -46,7 +50,7 @@ export default async function Image({
             color: "rgba(255,255,255,0.6)",
           }}
         >
-          {client?.studioName || "Selección de fotos"}
+          {client?.studioName || t.page.eyebrow}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -83,7 +87,7 @@ export default async function Image({
           }}
         >
           <div style={{ display: "flex", fontSize: 34 }}>
-            Elige tus fotos favoritas →
+            {t.meta.ogCallToAction}
           </div>
           {photoCount > 0 && (
             <div style={{ display: "flex", alignItems: "baseline" }}>
@@ -100,7 +104,7 @@ export default async function Image({
                   color: "rgba(255,255,255,0.6)",
                 }}
               >
-                {photoCount === 1 ? "foto" : "fotos"}
+                {t.page.photoCount(photoCount)}
               </div>
             </div>
           )}

@@ -1,3 +1,7 @@
+"use client";
+
+import { useT } from "@/components/I18nProvider";
+
 interface SelectionButtonProps {
   selectedCount: number;
   saveStatus: "idle" | "saving" | "saved" | "error";
@@ -17,28 +21,27 @@ export default function SelectionButton({
   finalizeError = false,
   onFinalize,
 }: SelectionButtonProps) {
+  const t = useT();
   const disabled = !canFinalize || isFinalizing || isFinalized;
 
   let label: string;
   if (isFinalizing) {
-    label = "Finalizando…";
+    label = t.finalize.finalizing;
   } else if (isFinalized) {
-    label = "Selección finalizada ✓";
-  } else if (selectedCount > 0) {
-    label = `Finalizar selección · ${selectedCount}`;
+    label = t.finalize.finalized;
   } else {
-    label = "Finalizar selección";
+    label = t.finalize.button(selectedCount);
   }
 
   let status: string | null = null;
   if (finalizeError) {
-    status = "No se pudo finalizar. Inténtalo de nuevo.";
+    status = t.finalize.error;
   } else if (saveStatus === "saving") {
-    status = "Guardando…";
+    status = t.finalize.saving;
   } else if (saveStatus === "saved") {
-    status = "Cambios guardados ✓";
+    status = t.finalize.saved;
   } else if (saveStatus === "error") {
-    status = "No se pudo guardar. Reintentando…";
+    status = t.finalize.saveError;
   }
 
   return (
