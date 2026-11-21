@@ -1,0 +1,199 @@
+{
+  "eventSlug": "v0m5hd",
+  "queries": [
+    {
+      "query": "the bride getting her makeup done",
+      "relevant": [
+        "DEMO_0003",
+        "DEMO_0006",
+        "DEMO_0009",
+        "DEMO_0010",
+        "DEMO_0014",
+        "DEMO_0015"
+      ]
+    },
+    {
+      "query": "wedding rings",
+      "relevant": [
+        "DEMO_0048",
+        "DEMO_0054",
+        "DEMO_0080",
+        "DEMO_0087",
+        "DEMO_0088",
+        "DEMO_0089",
+        "DEMO_0090",
+        "DEMO_0091",
+        "DEMO_0092",
+        "DEMO_0093",
+        "DEMO_0094",
+        "DEMO_0095",
+        "DEMO_0096",
+        "DEMO_0131",
+        "DEMO_0136",
+        "DEMO_0183"
+      ]
+    },
+    {
+      "query": "the couple kissing",
+      "relevant": [
+        "DEMO_0024",
+        "DEMO_0045",
+        "DEMO_0097",
+        "DEMO_0098",
+        "DEMO_0099",
+        "DEMO_0100",
+        "DEMO_0101",
+        "DEMO_0102",
+        "DEMO_0103",
+        "DEMO_0104",
+        "DEMO_0105",
+        "DEMO_0106",
+        "DEMO_0108",
+        "DEMO_0111",
+        "DEMO_0121"
+      ]
+    },
+    {
+      "query": "the wedding cake",
+      "relevant": [
+        "DEMO_0081",
+        "DEMO_0171",
+        "DEMO_0172",
+        "DEMO_0173",
+        "DEMO_0174",
+        "DEMO_0175",
+        "DEMO_0176",
+        "DEMO_0177",
+        "DEMO_0178"
+      ]
+    },
+    {
+      "query": "the bride and groom dancing",
+      "relevant": [
+        "DEMO_0037",
+        "DEMO_0181",
+        "DEMO_0182",
+        "DEMO_0183",
+        "DEMO_0184",
+        "DEMO_0186",
+        "DEMO_0187",
+        "DEMO_0188"
+      ]
+    },
+    {
+      "query": "the bride holding her bouquet",
+      "relevant": [
+        "DEMO_0017",
+        "DEMO_0021",
+        "DEMO_0039",
+        "DEMO_0046",
+        "DEMO_0069",
+        "DEMO_0071",
+        "DEMO_0109",
+        "DEMO_0117",
+        "DEMO_0154",
+        "DEMO_0155",
+        "DEMO_0157",
+        "DEMO_0158",
+        "DEMO_0159",
+        "DEMO_0160",
+        "DEMO_0161",
+        "DEMO_0162"
+      ]
+    },
+    {
+      "query": "the bridesmaids",
+      "relevant": [
+        "DEMO_0029",
+        "DEMO_0030",
+        "DEMO_0031",
+        "DEMO_0032",
+        "DEMO_0034",
+        "DEMO_0035",
+        "DEMO_0036"
+      ]
+    },
+    {
+      "query": "the groom with his groomsmen",
+      "relevant": [
+        "DEMO_0030",
+        "DEMO_0031",
+        "DEMO_0047",
+        "DEMO_0049",
+        "DEMO_0050",
+        "DEMO_0051"
+      ]
+    },
+    {
+      "query": "a dog at the wedding",
+      "relevant": [
+        "DEMO_0190",
+        "DEMO_0191",
+        "DEMO_0192"
+      ]
+    },
+    {
+      "query": "children at the wedding",
+      "relevant": [
+        "DEMO_0036",
+        "DEMO_0050",
+        "DEMO_0128",
+        "DEMO_0133",
+        "DEMO_0137",
+        "DEMO_0139",
+        "DEMO_0140"
+      ]
+    },
+    {
+      "query": "the bride walking down the aisle",
+      "relevant": [
+        "DEMO_0058",
+        "DEMO_0059",
+        "DEMO_0077"
+      ]
+    },
+    {
+      "query": "the reception tables",
+      "relevant": [
+        "DEMO_0163",
+        "DEMO_0164",
+        "DEMO_0165",
+        "DEMO_0166",
+        "DEMO_0167",
+        "DEMO_0168",
+        "DEMO_0169",
+        "DEMO_0170"
+      ]
+    },
+    {
+      "query": "the bride with her father",
+      "relevant": [
+        "DEMO_0058",
+        "DEMO_0059",
+        "DEMO_0060",
+        "DEMO_0061",
+        "DEMO_0062"
+      ]
+    },
+    {
+      "query": "a race car",
+      "relevant": []
+    },
+    {
+      "query": "people working out in a gym",
+      "relevant": []
+    },
+    {
+      "query": "a snowy mountain landscape",
+      "relevant": []
+    },
+    {
+      "query": "someone cooking in a kitchen",
+      "relevant": []
+    },
+    {
+      "query": "a person reading on a train",
+      "relevant": []
+    }
+  ]
+}
