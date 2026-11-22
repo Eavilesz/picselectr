@@ -2,7 +2,7 @@
 
 A photo selection tool for photographers, with AI search. Clients get a private, PIN-protected link to their event photos and pick which ones they want delivered (digital files, album prints and album cover), while the photographer manages everything from a dashboard. Clients can also type what they're looking for ("la novia con su papá", _the bride with her dad_) and find those photos among hundreds or thousands.
 
-Built solo and used by photography studios with real clients, starting with [Sttoria](https://sttoria.studio). I did everything end to end: product, schema, auth, storage, image processing, email, and the AI search with its evaluation.
+Built solo and used by photography studios with real clients, starting with Sttoria, a local video and photography studio. I did everything end to end: product, schema, auth, storage, image processing, email, and the AI search with its evaluation.
 
 Client pages are in Spanish or English, set per event. The studios' clients use Spanish, so Spanish text in this README is followed by its English translation in italics.
 
@@ -17,7 +17,6 @@ A demo wedding with 181 stock photos (no client photos), in English. Try searchi
 - `wedding rings`, `the wedding cake`, `the couple kissing`, `the bride getting ready`
 - `black and white photos`, `sunset`: style and light, not just objects
 - `a vintage car`, `an Indian wedding`: one right photo among 181
-- `a dog at the wedding`: the event has exactly three dog photos, and search returns those three
 
 Selections you make there are saved, so other visitors may see them.
 
@@ -225,15 +224,6 @@ The SQL in [`supabase/migrations`](supabase/migrations) is applied in filename o
 pnpm lint     # ESLint
 pnpm build    # Production build
 ```
-
-## Roadmap
-
-- [ ] Automated tests (unit + e2e)
-- [ ] Measure the watermark's effect on search, using clean copies of the same event
-- [ ] Improve setting and group queries ("en la iglesia", _at the church_; "los invitados", _the guests_), e.g. with generated photo descriptions
-- [ ] Bulk photo download for photographers
-- [x] Client selection pages in Spanish or English, set per event
-- [ ] Translate the delivery gallery and the photographer dashboard
 
 ## Credits
 
