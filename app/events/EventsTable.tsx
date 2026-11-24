@@ -16,13 +16,22 @@ export default function EventsTable({
 }) {
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, startTransition] = useTransition();
 
   function handleDelete(slug: string) {
+    if (isDeleting) return;
+    setDeleteError(null);
     startTransition(async () => {
-      await deleteStoredProduct(slug);
-      setConfirmDelete(null);
-      router.refresh();
+      try {
+        await deleteStoredProduct(slug);
+        setConfirmDelete(null);
+        router.refresh();
+      } catch (err) {
+        // An uncaught error here would take down the whole page
+        console.error(err);
+        setDeleteError("No se pudo eliminar el evento. Intenta de nuevo.");
+      }
     });
   }
 
@@ -139,16 +148,27 @@ export default function EventsTable({
               <td className="px-5 py-4 text-right">
                 {confirmDelete === client.slug ? (
                   <div className="flex items-center gap-2 justify-end">
-                    <span className="text-xs text-neutral-400">¿Eliminar?</span>
+                    <span
+                      className={`text-xs ${deleteError ? "text-red-400" : "text-neutral-400"}`}
+                    >
+                      {isDeleting
+                        ? "Eliminando…"
+                        : (deleteError ?? "¿Eliminar?")}
+                    </span>
                     <button
                       onClick={() => handleDelete(client.slug)}
-                      className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                      disabled={isDeleting}
+                      className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       Sí
                     </button>
                     <button
-                      onClick={() => setConfirmDelete(null)}
-                      className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors"
+                      onClick={() => {
+                        setConfirmDelete(null);
+                        setDeleteError(null);
+                      }}
+                      disabled={isDeleting}
+                      className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       No
                     </button>

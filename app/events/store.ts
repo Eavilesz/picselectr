@@ -258,7 +258,10 @@ export async function deleteStoredProduct(slug: string): Promise<void> {
     .eq("slug", slug)
     .select("slug");
   if (error) throw new Error(error.message);
-  if (!data || data.length === 0) throw new Error("Evento no encontrado");
+  // No row back: already deleted (double click, another tab) or not ours.
+  // Either way the event isn't there for this user, which is what they
+  // asked for, so don't fail. Skipping R2 cleanup keeps others' files safe.
+  if (!data || data.length === 0) return;
 
   try {
     await deleteEventPhotos(slug);
