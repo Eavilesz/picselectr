@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { GalleryPhoto } from "@/lib/galleries";
 import Lightbox from "./Lightbox";
+import StudioName from "@/components/StudioName";
 import { DownloadIcon } from "./icons";
 
 // Column count by viewport. The server renders 2 columns; the client
@@ -78,9 +79,10 @@ export default function GalleryView({
 
         <div className="relative z-10 px-6 text-center">
           {studioName && (
-            <p className="text-xs md:text-sm tracking-[0.35em] uppercase text-white/80 mb-6">
-              {studioName}
-            </p>
+            <StudioName
+              name={studioName}
+              className="text-xs md:text-sm tracking-[0.35em] uppercase text-white/80 mb-6"
+            />
           )}
           <h1 className="text-5xl md:text-7xl font-serif leading-[1.1] drop-shadow-sm">
             {title}
@@ -172,8 +174,11 @@ export default function GalleryView({
       )}
 
       {studioName && (
-        <footer className="py-12 text-center text-[10px] tracking-[0.3em] uppercase text-white/30">
-          {studioName}
+        <footer className="py-12 text-center">
+          <StudioName
+            name={studioName}
+            className="text-[10px] tracking-[0.3em] uppercase text-white/30"
+          />
         </footer>
       )}
 

@@ -33,8 +33,8 @@ export const services = [
   {
     name: "Bodas",
     description:
-      "Del primer detalle de la mañana al último baile de la noche, contamos su día completo en foto y video.",
-    includes: ["Fotografía", "Video", "Álbum impreso"],
+      "Del primer detalle de la mañana al último baile de la noche, contamos su día completo en foto y video. Después, eligen sus fotos favoritas y las de su álbum en una galería privada en línea.",
+    includes: ["Fotografía", "Video", "Álbum impreso", "Galería privada en línea"],
   },
   {
     name: "Save the Date",
