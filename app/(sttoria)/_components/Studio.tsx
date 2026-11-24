@@ -5,10 +5,10 @@ export default function Studio() {
     <section
       id="estudio"
       aria-labelledby="estudio-title"
-      className="bg-navy px-5 text-ivory py-24 sm:px-10 lg:px-16 lg:py-44"
+      className="bg-graphite border-y border-white/[0.06] px-5 text-ivory py-24 sm:px-10 lg:px-16 lg:py-44"
     >
       <div className="reveal mx-auto flex max-w-215 flex-col items-center text-center">
-        <Eyebrow centered dark className="mb-9">
+        <Eyebrow centered className="mb-9">
           El estudio
         </Eyebrow>
         <h2

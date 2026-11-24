@@ -15,29 +15,18 @@
 }
 
 /* STTORIA brand tokens, shared by the landing page and the client-facing
-   app. Use them as bg-ivory, text-gold, border-line, ease-luxe, … */
+   app. Use them as bg-onyx, text-brand-orange, ease-luxe, animate-rise, … */
 @theme {
   --color-ivory: #f6f1ea;
-  --color-sand: #eee7dd;
-  --color-line: #d9cdbd;
-  --color-ink: #24201c;
-  --color-muted: #5e554d;
-  --color-gold: #9c7a52; /* large text and accents */
-  --color-gold-deep: #84643f; /* small text on ivory (4.5:1) */
-  --color-gold-soft: #c9a97e; /* gold on dark backgrounds */
-  --color-night: #1d1a17;
 
-  /* Logo colors (three rectangles: orange, white, blue). The -deep shades
-     pass contrast as text on ivory; the plain ones are for marks, lines and
-     text on navy. */
+  /* Logo colors (three rectangles: orange, white, blue). Orange is the
+     accent; blue only appears in the logo mark itself. */
   --color-brand-orange: #dc7f12;
-  --color-brand-orange-deep: #b8640a;
   --color-brand-blue: #157cb8;
-  --color-brand-blue-deep: #0f5f8f;
-  --color-brand-blue-soft: #8cc3e8;
-  --color-onyx: #0b0f13; /* dark base of the landing page */
-  --color-navy: #0e2a3f;
-  --color-navy-line: #2a4860;
+
+  /* Dark landing page: onyx base, graphite bands between sections */
+  --color-onyx: #0b0f13;
+  --color-graphite: #1c1d20;
 
   --ease-luxe: cubic-bezier(0.2, 0.7, 0.2, 1);
   --animate-rise: rise 1.3s var(--ease-luxe) both;

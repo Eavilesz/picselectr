@@ -12,7 +12,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Escríbenos por WhatsApp"
-      className="group fixed bottom-5 right-5 z-50 flex h-14 items-center gap-3 rounded-full bg-ivory pl-4.5 pr-4.5 text-navy shadow-[0_10px_30px_-10px_rgba(0,0,0,0.7)] animate-rise transition-colors duration-500 [animation-delay:1500ms] hover:bg-brand-orange hover:text-white sm:bottom-8 sm:right-8"
+      className="group fixed bottom-5 right-5 z-50 flex h-14 items-center gap-3 rounded-full bg-ivory pl-4.5 pr-4.5 text-onyx shadow-[0_10px_30px_-10px_rgba(0,0,0,0.7)] animate-rise transition-colors duration-500 [animation-delay:1500ms] hover:bg-brand-orange hover:text-white sm:bottom-8 sm:right-8"
     >
       <svg
         aria-hidden

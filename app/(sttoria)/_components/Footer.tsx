@@ -9,7 +9,7 @@ export default function Footer() {
         <p className="pl-[0.32em] font-serif text-[clamp(40px,5vw,64px)] font-light leading-none tracking-[0.32em]">
           {site.name}
         </p>
-        <p className="flex items-center gap-4.5 text-[11px] font-normal uppercase tracking-[0.36em] text-brand-blue-soft">
+        <p className="flex items-center gap-4.5 text-[11px] font-normal uppercase tracking-[0.36em] text-ivory/60">
           <span aria-hidden className="h-px w-10 bg-brand-orange" />
           {site.tagline}
           <span aria-hidden className="h-px w-10 bg-brand-orange" />
