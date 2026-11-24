@@ -1,0 +1,19 @@
+# STTORIA
+
+> STTORIA (Fotografía & Video) is a wedding photography and video studio in Guayaquil, Ecuador. Its focus is weddings, covered in photo and video with a printed album. It also offers Save the Date sessions, personalized photo sessions outdoors or indoors, and birthday and celebration coverage. The website is in Spanish.
+
+## Services
+
+- Bodas (weddings): full-day photo and video coverage, from the morning preparations to the last dance, with a printed album.
+- Save the Date: a pre-wedding session to announce the date and get comfortable in front of the camera.
+- Sesiones personalizadas: portraits, couples and family sessions, outdoors or indoors.
+- Cumpleaños y celebraciones: birthdays and intimate celebrations.
+
+## Pages
+
+- [Home](https://sttoria.studio/): about the studio, services and portfolio
+
+## Contact
+
+- WhatsApp: +593 99 031 9194 (https://wa.me/593990319194)
+- Location: Guayaquil, Ecuador
