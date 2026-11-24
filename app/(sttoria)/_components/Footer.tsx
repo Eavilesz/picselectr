@@ -19,6 +19,17 @@ export default function Footer() {
         <p className="mt-2 text-xs tracking-[0.14em] text-ivory/60">
           {SITE_URL.replace(/^https?:\/\//, "")} · © {new Date().getFullYear()}
         </p>
+        <p className="text-[11px] tracking-[0.14em] text-ivory/60">
+          Sitio diseñado y desarrollado por{" "}
+          <a
+            href="https://www.ernestoaviles.dev/"
+            target="_blank"
+            rel="noopener"
+            className="text-ivory/80 underline decoration-ivory/30 underline-offset-4 transition-colors duration-500 hover:text-brand-orange hover:decoration-brand-orange"
+          >
+            Ernesto Avilés
+          </a>
+        </p>
       </div>
     </footer>
   );
