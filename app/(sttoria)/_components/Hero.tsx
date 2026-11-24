@@ -19,10 +19,10 @@ export default function Hero() {
         <p className="animate-rise font-serif text-[clamp(52px,6.6vw,100px)] font-light leading-none tracking-[-0.01em] [animation-delay:500ms]">
           Cada historia <em>merece</em>
         </p>
-        <p className="mt-1.5 animate-rise font-script text-[clamp(48px,5.8vw,88px)] leading-[1.15] text-brand-orange-deep [animation-delay:500ms]">
+        <p className="mt-1.5 animate-rise font-script text-[clamp(48px,5.8vw,88px)] leading-[1.15] text-brand-orange [animation-delay:500ms]">
           ser eterna
         </p>
-        <p className="mt-10 max-w-100 animate-rise text-[15px] leading-[1.9] text-muted [animation-delay:750ms]">
+        <p className="mt-10 max-w-100 animate-rise text-[15px] leading-[1.9] text-ivory/70 [animation-delay:750ms]">
           Fotografía y video de bodas para parejas que valoran la luz, los
           detalles y la emoción verdadera de cada instante.
         </p>

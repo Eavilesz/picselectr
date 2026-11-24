@@ -3,8 +3,8 @@ import BrandMark from "./BrandMark";
 
 export default function Footer() {
   return (
-    <footer className="bg-navy px-5 pb-16 text-[#f1ebe2] sm:px-10 lg:px-16 lg:pb-26">
-      <div className="reveal mx-auto flex max-w-330 flex-col items-center gap-5 border-t border-navy-line pt-14 text-center">
+    <footer className="bg-onyx px-5 pb-16 text-[#f1ebe2] sm:px-10 lg:px-16 lg:pb-26">
+      <div className="reveal mx-auto flex max-w-330 flex-col items-center gap-5 border-t border-white/10 pt-14 text-center">
         <BrandMark className="mb-3" size="lg" />
         <p className="pl-[0.32em] font-serif text-[clamp(40px,5vw,64px)] font-light leading-none tracking-[0.32em]">
           {site.name}

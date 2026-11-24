@@ -49,7 +49,7 @@ export default function Portfolio() {
       aria-labelledby="portafolio-title"
       className="bg-navy px-5 pb-24 pt-24 text-[#f1ebe2] sm:px-10 lg:px-16 lg:pb-38 lg:pt-44"
     >
-      <div className="mx-auto max-w-330">
+      <div className="mx-auto max-w-298">
         <div className="reveal mb-14 flex flex-col items-center text-center lg:mb-26">
           <Eyebrow centered dark className="mb-7">
             Portafolio

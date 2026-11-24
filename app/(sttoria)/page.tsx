@@ -87,7 +87,7 @@ function jsonLd() {
 
 export default function Home() {
   return (
-    <div className="flex-1 bg-ivory font-light text-ink">
+    <div className="flex-1 bg-onyx font-light text-ivory">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

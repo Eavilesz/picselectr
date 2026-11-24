@@ -2,7 +2,7 @@
 export default function Eyebrow({
   children,
   centered = false,
-  dark = false,
+  dark = true,
   as: Tag = "p",
   className = "",
 }: {
