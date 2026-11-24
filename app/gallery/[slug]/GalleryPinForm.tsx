@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { unlockGallery } from "./actions";
 import { getMessages } from "@/lib/i18n";
+import StudioName from "@/components/StudioName";
 
 // Delivery galleries aren't translated yet
 const t = getMessages("es");
@@ -42,9 +43,10 @@ export default function GalleryPinForm({
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6 text-center">
       {studioName && (
-        <p className="text-xs tracking-[0.3em] text-white/60 uppercase font-medium mb-6">
-          {studioName}
-        </p>
+        <StudioName
+          name={studioName}
+          className="text-xs tracking-[0.3em] text-white/60 uppercase font-medium mb-6"
+        />
       )}
       <h1 className="text-4xl md:text-5xl font-serif text-white leading-tight max-w-xl">
         {title}

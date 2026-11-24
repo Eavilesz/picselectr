@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import PhotoGallery from "@/components/PhotoGallery";
+import StudioName from "@/components/StudioName";
 import SelectionButton from "@/components/SelectionButton";
 import ImagePreview from "@/components/ImagePreview";
 import SelectionModeNav, { SelectionMode } from "@/components/SelectionModeNav";
@@ -337,9 +338,10 @@ export default function SelectionPage({
       {/* Header */}
       <header className="px-6 pt-14 pb-8">
         {client.studioName && (
-          <p className="text-xs tracking-[0.25em] text-white/60 uppercase font-medium mb-4">
-            {client.studioName}
-          </p>
+          <StudioName
+            name={client.studioName}
+            className="text-xs tracking-[0.25em] text-white/60 uppercase font-medium mb-4"
+          />
         )}
         <p className="text-[10px] tracking-[0.35em] text-white/35 uppercase mb-5">
           {t.page.eyebrow}

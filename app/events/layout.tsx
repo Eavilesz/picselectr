@@ -3,6 +3,7 @@ import { logout } from "./login/actions";
 
 export const metadata = {
   title: "Admin — Picselectr",
+  robots: { index: false, follow: false },
 };
 
 export default function AdminLayout({

@@ -27,6 +27,8 @@ export async function generateMetadata({
   return {
     title: `${title} — ${t.meta.titleSuffix}`,
     description,
+    // Private client link: previews yes, search results no
+    robots: { index: false, follow: false },
     // The OG image comes from opengraph-image.tsx in this folder
     openGraph: {
       title,
