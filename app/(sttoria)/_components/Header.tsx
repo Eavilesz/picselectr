@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
 import BrandMark from "./BrandMark";
+import { SocialIcon, socialProfiles } from "./SocialLinks";
 
 const links = [
   { href: "#estudio", label: "Estudio" },
@@ -20,7 +21,7 @@ export default function Header() {
         {site.name}
       </Link>
       <nav aria-label="Principal">
-        <ul className="flex flex-wrap gap-x-6 text-[11px] font-normal uppercase tracking-[0.3em] sm:gap-x-12">
+        <ul className="flex flex-wrap items-center gap-x-6 text-[11px] font-normal uppercase tracking-[0.3em] sm:gap-x-12">
           {links.map((link) => (
             <li key={link.href}>
               <a
@@ -31,6 +32,9 @@ export default function Header() {
               </a>
             </li>
           ))}
+          <li>
+            <SocialIcon {...socialProfiles[0]} className="-mx-3" />
+          </li>
         </ul>
       </nav>
     </header>

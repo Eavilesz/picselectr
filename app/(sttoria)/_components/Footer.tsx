@@ -1,5 +1,6 @@
 import { SITE_URL, site } from "@/lib/site";
 import BrandMark from "./BrandMark";
+import SocialLinks from "./SocialLinks";
 
 export default function Footer() {
   return (
@@ -14,16 +15,9 @@ export default function Footer() {
           {site.tagline}
           <span aria-hidden className="h-px w-10 bg-brand-orange" />
         </p>
-        <p className="mt-7 text-xs tracking-[0.14em] text-ivory/60">
+        <SocialLinks className="mt-6 text-ivory/70" />
+        <p className="mt-2 text-xs tracking-[0.14em] text-ivory/60">
           {SITE_URL.replace(/^https?:\/\//, "")} · © {new Date().getFullYear()}
-          {site.instagram && (
-            <>
-              {" · "}
-              <a href={site.instagram} rel="me" className="hover:text-brand-orange">
-                Instagram
-              </a>
-            </>
-          )}
         </p>
       </div>
     </footer>

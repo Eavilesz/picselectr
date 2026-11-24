@@ -24,8 +24,8 @@ export const site = {
   locale: "es_EC",
   city: "Guayaquil",
   country: "EC",
-  // TODO: full profile URL, e.g. "https://www.instagram.com/sttoria.studio"
-  instagram: "",
+  instagram: "https://www.instagram.com/sttoria_ph/",
+  facebook: "https://www.facebook.com/Sttoria.PhotoStudio",
   whatsapp: WHATSAPP_NUMBER,
 } as const;
 

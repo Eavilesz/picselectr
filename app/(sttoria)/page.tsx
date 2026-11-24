@@ -67,7 +67,7 @@ function jsonLd() {
     business.areaServed = site.city;
   }
   if (site.whatsapp) business.telephone = `+${site.whatsapp}`;
-  if (site.instagram) business.sameAs = [site.instagram];
+  business.sameAs = [site.instagram, site.facebook];
 
   return {
     "@context": "https://schema.org",
