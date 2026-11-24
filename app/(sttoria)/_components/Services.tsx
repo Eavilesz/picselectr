@@ -27,7 +27,7 @@ export default function Services() {
       </div>
 
       <article className="reveal flex flex-wrap items-baseline gap-x-16 gap-y-6 border-y border-line py-12">
-        <span aria-hidden className="flex-[0_0_72px] font-serif text-[28px] italic text-gold">
+        <span aria-hidden className="flex-[0_0_72px] font-serif text-[28px] italic text-brand-orange-deep">
           01
         </span>
         <h3 className="flex-[1_1_300px] font-serif text-[clamp(44px,5vw,72px)] font-light leading-none">
@@ -46,7 +46,7 @@ export default function Services() {
       <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-x-14">
         {others.map((service, i) => (
           <article key={service.name} className="reveal border-b border-line py-12">
-            <span aria-hidden className="font-serif text-2xl italic text-gold">
+            <span aria-hidden className="font-serif text-2xl italic text-brand-orange-deep">
               {String(i + 2).padStart(2, "0")}
             </span>
             <h3 className="mb-4 mt-5 font-serif text-[32px] leading-[1.1]">

@@ -5,10 +5,10 @@ export default function Studio() {
     <section
       id="estudio"
       aria-labelledby="estudio-title"
-      className="bg-sand px-5 py-24 sm:px-10 lg:px-16 lg:py-44"
+      className="bg-navy px-5 text-ivory py-24 sm:px-10 lg:px-16 lg:py-44"
     >
       <div className="reveal mx-auto flex max-w-215 flex-col items-center text-center">
-        <Eyebrow centered className="mb-9">
+        <Eyebrow centered dark className="mb-9">
           El estudio
         </Eyebrow>
         <h2
@@ -19,12 +19,12 @@ export default function Studio() {
           <br />
           <em>Contamos historias.</em>
         </h2>
-        <p className="mt-10 max-w-140 text-base leading-[1.95] text-muted">
+        <p className="mt-10 max-w-140 text-base leading-[1.95] text-ivory/75">
           Acompañamos cada celebración con una mirada discreta y un cuidado
           artesanal por cada imagen, para entregar un relato que su familia
           querrá volver a ver durante generaciones.
         </p>
-        <p aria-hidden className="mt-10 font-script text-[44px] leading-none text-gold">
+        <p aria-hidden className="mt-10 font-script text-[44px] leading-none text-brand-orange">
           Sttoria
         </p>
       </div>

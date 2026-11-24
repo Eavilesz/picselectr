@@ -27,6 +27,17 @@
   --color-gold-soft: #c9a97e; /* gold on dark backgrounds */
   --color-night: #1d1a17;
 
+  /* Logo colors (three rectangles: orange, white, blue). The -deep shades
+     pass contrast as text on ivory; the plain ones are for marks, lines and
+     text on navy. */
+  --color-brand-orange: #dc7f12;
+  --color-brand-orange-deep: #b8640a;
+  --color-brand-blue: #157cb8;
+  --color-brand-blue-deep: #0f5f8f;
+  --color-brand-blue-soft: #8cc3e8;
+  --color-navy: #0e2a3f;
+  --color-navy-line: #2a4860;
+
   --ease-luxe: cubic-bezier(0.2, 0.7, 0.2, 1);
   --animate-rise: rise 1.3s var(--ease-luxe) both;
   --animate-unveil: unveil 1.7s cubic-bezier(0.7, 0, 0.2, 1) both;

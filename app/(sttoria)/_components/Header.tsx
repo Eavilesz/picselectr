@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
+import BrandMark from "./BrandMark";
 
 const links = [
   { href: "#estudio", label: "Estudio" },
@@ -12,9 +13,10 @@ export default function Header() {
     <header className="mx-auto flex max-w-330 flex-wrap items-center justify-between gap-x-10 gap-y-2 px-5 py-7 sm:px-10 lg:px-16">
       <Link
         href="/"
-        className="py-2.5 font-serif text-[22px] tracking-[0.42em]"
+        className="flex items-center gap-3.5 py-2.5 font-serif text-[22px] tracking-[0.42em]"
         aria-label={`${site.name}, inicio`}
       >
+        <BrandMark />
         {site.name}
       </Link>
       <nav aria-label="Principal">

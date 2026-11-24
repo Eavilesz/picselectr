@@ -12,11 +12,11 @@ export default function Eyebrow({
   as?: "p" | "h1";
   className?: string;
 }) {
-  const line = `h-px w-8 sm:w-11 ${dark ? "bg-gold-soft" : "bg-gold"}`;
+  const line = "h-px w-8 bg-brand-orange sm:w-11";
   return (
     <Tag
       className={`flex items-center gap-4.5 text-[11px] font-normal uppercase tracking-[0.36em] ${
-        dark ? "text-gold-soft" : "text-gold-deep"
+        dark ? "text-brand-blue-soft" : "text-brand-blue-deep"
       } ${centered ? "justify-center" : ""} ${className}`}
     >
       <span aria-hidden className={line} />

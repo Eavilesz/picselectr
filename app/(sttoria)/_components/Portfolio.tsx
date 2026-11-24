@@ -47,7 +47,7 @@ export default function Portfolio() {
     <section
       id="portafolio"
       aria-labelledby="portafolio-title"
-      className="bg-night px-5 pb-24 pt-24 text-[#f1ebe2] sm:px-10 lg:px-16 lg:pb-38 lg:pt-44"
+      className="bg-navy px-5 pb-24 pt-24 text-[#f1ebe2] sm:px-10 lg:px-16 lg:pb-38 lg:pt-44"
     >
       <div className="mx-auto max-w-330">
         <div className="reveal mb-14 flex flex-col items-center text-center lg:mb-26">
@@ -60,7 +60,7 @@ export default function Portfolio() {
           >
             Momentos
           </h2>
-          <p aria-hidden className="mt-1 font-script text-[clamp(40px,4.4vw,64px)] leading-[1.2] text-gold-soft">
+          <p aria-hidden className="mt-1 font-script text-[clamp(40px,4.4vw,64px)] leading-[1.2] text-brand-orange">
             que permanecen
           </p>
         </div>
